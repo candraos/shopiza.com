@@ -1,0 +1,257 @@
+'use client';
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
+
+type ProductImageItem = {
+  id?: string;
+  imageUrl: string;
+  altText?: string | null;
+  isMain: boolean;
+  sortOrder: number;
+};
+
+type ProductEditorProps = {
+  product?: {
+    id: string;
+    name: string;
+    description: string;
+    priceCents: number;
+    stock: number;
+    archived: boolean;
+    sectionId: string | null;
+    images: ProductImageItem[];
+  };
+  sections: Array<{
+    id: string;
+    name: string;
+  }>;
+};
+
+export function ProductEditor({ product, sections }: ProductEditorProps) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [images, setImages] = useState<ProductImageItem[]>(
+    product?.images.map((image, index) => ({
+      imageUrl: image.imageUrl,
+      altText: image.altText ?? "",
+      isMain: image.isMain,
+      sortOrder: image.sortOrder ?? index,
+    })) ?? [],
+  );
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+
+  const priceValue = useMemo(
+    () => (product ? (product.priceCents / 100).toFixed(2) : "0.00"),
+    [product],
+  );
+
+  return (
+    <form
+      className="glass-card rounded-[36px] p-8"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        setPending(true);
+
+        let nextImages = [...images];
+
+        if (newFiles.length > 0) {
+          const uploadFormData = new FormData();
+          newFiles.forEach((file) => uploadFormData.append("files", file));
+
+          const uploadResponse = await fetch("/api/admin/uploads/product-image", {
+            method: "POST",
+            body: uploadFormData,
+          });
+          const uploadData = (await uploadResponse.json()) as {
+            message?: string;
+            imageUrls?: string[];
+          };
+
+          if (!uploadResponse.ok || !uploadData.imageUrls) {
+            toast.error(uploadData.message ?? "Image upload failed.");
+            setPending(false);
+            return;
+          }
+
+          nextImages = [
+            ...nextImages,
+            ...uploadData.imageUrls.map((imageUrl, index) => ({
+              imageUrl,
+              altText: "",
+              isMain: nextImages.length === 0 && index === 0,
+              sortOrder: nextImages.length + index,
+            })),
+          ];
+        }
+
+        if (!nextImages.some((image) => image.isMain) && nextImages[0]) {
+          nextImages[0].isMain = true;
+        }
+
+        const formData = new FormData(event.currentTarget);
+        const payload = {
+          name: String(formData.get("name") ?? ""),
+          description: String(formData.get("description") ?? ""),
+          price: String(formData.get("price") ?? ""),
+          stock: Number(formData.get("stock") ?? "0"),
+          sectionId: String(formData.get("sectionId") ?? ""),
+          archived: formData.get("archived") === "on",
+          images: nextImages.map((image, index) => ({
+            imageUrl: image.imageUrl,
+            altText: image.altText ?? "",
+            isMain: image.isMain,
+            sortOrder: index,
+          })),
+        };
+
+        const response = await fetch(
+          product ? `/api/admin/products/${product.id}` : "/api/admin/products",
+          {
+            method: product ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
+        const data = (await response.json()) as { message?: string };
+
+        if (!response.ok) {
+          toast.error(data.message ?? "Could not save the product.");
+          setPending(false);
+          return;
+        }
+
+        toast.success(product ? "Product updated." : "Product created.");
+        router.push("/admin/products");
+        router.refresh();
+      }}
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <TextField
+          label="Product name"
+          name="name"
+          defaultValue={product?.name}
+          placeholder="Product name"
+        />
+        <TextField
+          label="Price"
+          name="price"
+          defaultValue={priceValue}
+          placeholder="1499.00"
+        />
+        <TextField
+          label="Stock"
+          name="stock"
+          type="number"
+          min="0"
+          defaultValue={product?.stock ?? 0}
+        />
+        <SelectField
+          label="Section"
+          name="sectionId"
+          defaultValue={product?.sectionId ?? ""}
+        >
+          <option value="">Unassigned / archive</option>
+          {sections.map((section) => (
+            <option key={section.id} value={section.id}>
+              {section.name}
+            </option>
+          ))}
+        </SelectField>
+      </div>
+      <div className="mt-4">
+        <TextAreaField
+          label="Description"
+          name="description"
+          defaultValue={product?.description}
+        />
+      </div>
+      <label className="mt-4 inline-flex items-center gap-3 text-sm font-medium text-[var(--navy-950)]">
+        <input type="checkbox" name="archived" defaultChecked={product?.archived} className="h-4 w-4" />
+        Mark as archived/unassigned
+      </label>
+
+      <div className="mt-8 rounded-[28px] border border-[var(--line-soft)] bg-white p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="display-title text-2xl font-semibold text-[var(--navy-950)]">
+              Product images
+            </p>
+            <p className="mt-2 text-sm text-[var(--ink-700)]">
+              Upload multiple images and choose the main image for product cards.
+            </p>
+          </div>
+          <input
+            type="file"
+            multiple
+            accept="image/png,image/jpeg,image/webp"
+            onChange={(event) =>
+              setNewFiles(Array.from(event.currentTarget.files ?? []))
+            }
+            className="max-w-[260px] text-sm"
+          />
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {images.map((image, index) => (
+            <article key={`${image.imageUrl}-${index}`} className="rounded-[24px] border border-[var(--line-soft)] p-3">
+              <div className="relative aspect-square overflow-hidden rounded-[18px] bg-[rgba(19,24,47,0.04)]">
+                <Image
+                  src={image.imageUrl}
+                  alt={image.altText ?? "Product image"}
+                  fill
+                  className="object-cover"
+                  sizes="240px"
+                />
+              </div>
+              <label className="mt-3 flex items-center gap-2 text-sm font-medium text-[var(--navy-950)]">
+                <input
+                  type="radio"
+                  checked={image.isMain}
+                  onChange={() =>
+                    setImages((current) =>
+                      current.map((entry, entryIndex) => ({
+                        ...entry,
+                        isMain: entryIndex === index,
+                      })),
+                    )
+                  }
+                />
+                Main image
+              </label>
+              <button
+                type="button"
+                className="mt-3 text-sm font-semibold text-[var(--danger-500)]"
+                onClick={() =>
+                  setImages((current) =>
+                    current.filter((_, entryIndex) => entryIndex !== index),
+                  )
+                }
+              >
+                Remove image
+              </button>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-8 flex gap-3">
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saving..." : product ? "Update product" : "Create product"}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => router.push("/admin/products")}
+        >
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}

@@ -1,65 +1,153 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
 
-export default function Home() {
+import { ProductCard } from "@/components/store/product-card";
+import { ButtonLink } from "@/components/ui/button";
+import { getHomepageData } from "@/lib/services/catalog";
+
+const trustPillars = [
+  {
+    icon: ShieldCheck,
+    title: "Secure ordering",
+    description: "Strong validation, safe sessions, and protected backend mutations.",
+  },
+  {
+    icon: Truck,
+    title: "Fast cash-on-delivery flow",
+    description: "Simple checkout, local cart persistence, and clean destination selection.",
+  },
+  {
+    icon: Sparkles,
+    title: "Premium curation",
+    description: "Polished storefront design with thoughtful product discovery and support.",
+  },
+];
+
+export default async function HomePage() {
+  const { sections, featuredProducts, discountedProducts } =
+    await getHomepageData();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-20 pb-20">
+      <section className="container-shell grid gap-8 py-14 lg:grid-cols-[1.2fr_0.8fr] lg:py-20">
+        <div className="mesh-accent spotlight-border relative overflow-hidden rounded-[40px] p-8 text-white shadow-[0_30px_70px_rgba(18,24,60,0.18)] md:p-12">
+          <div className="relative max-w-2xl space-y-6">
+            <span className="inline-flex rounded-full border border-white/16 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.34em] text-white/80">
+              Modern Ecommerce
+            </span>
+            <h1 className="display-title text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
+              Shop premium essentials with a faster, cleaner, more trustworthy flow.
+            </h1>
+            <p className="max-w-xl text-base leading-8 text-white/78 sm:text-lg">
+              Discover curated tech, lifestyle, and everyday upgrades through a
+              storefront designed around speed, clarity, and a premium shopping feel.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <ButtonLink href="/products">Browse catalog</ButtonLink>
+              <ButtonLink href="/contact" variant="secondary" className="border-white/20 bg-white/10 text-white hover:bg-white/14 hover:text-white">
+                Contact support
+              </ButtonLink>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="grid gap-4">
+          {trustPillars.map((pillar) => (
+            <article
+              key={pillar.title}
+              className="glass-card rounded-[32px] p-6 md:p-8"
+            >
+              <pillar.icon className="h-9 w-9 text-[var(--pink-500)]" />
+              <h2 className="mt-5 display-title text-2xl font-semibold text-[var(--navy-950)]">
+                {pillar.title}
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
+                {pillar.description}
+              </p>
+            </article>
+          ))}
         </div>
-      </main>
+      </section>
+
+      <section className="container-shell">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--pink-500)]">
+              Featured sections
+            </p>
+            <h2 className="mt-2 display-title text-3xl font-semibold text-[var(--navy-950)]">
+              Explore by section
+            </h2>
+          </div>
+          <ButtonLink href="/products" variant="ghost" className="hidden md:inline-flex">
+            View all
+          </ButtonLink>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {sections.map((section, index) => (
+            <Link
+              key={section.id}
+              href={`/products?section=${section.slug}`}
+              className="group glass-card rounded-[30px] p-6 hover:-translate-y-1"
+            >
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[rgba(244,71,161,0.1)] text-lg font-semibold text-[var(--pink-500)]">
+                0{index + 1}
+              </span>
+              <h3 className="mt-5 display-title text-2xl font-semibold text-[var(--navy-950)]">
+                {section.name}
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
+                {section.description}
+              </p>
+              <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--navy-950)] group-hover:text-[var(--pink-500)]">
+                Shop section
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="container-shell">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--pink-500)]">
+              Fresh picks
+            </p>
+            <h2 className="mt-2 display-title text-3xl font-semibold text-[var(--navy-950)]">
+              New arrivals
+            </h2>
+          </div>
+          <ButtonLink href="/products" variant="ghost" className="hidden md:inline-flex">
+            Shop everything
+          </ButtonLink>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      <section className="container-shell">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--danger-500)]">
+              Limited-time drops
+            </p>
+            <h2 className="mt-2 display-title text-3xl font-semibold text-[var(--navy-950)]">
+              Discounted right now
+            </h2>
+          </div>
+          <ButtonLink href="/products" variant="ghost" className="hidden md:inline-flex">
+            Browse deals
+          </ButtonLink>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {discountedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
