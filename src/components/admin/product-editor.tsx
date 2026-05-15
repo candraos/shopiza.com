@@ -36,6 +36,7 @@ type ProductEditorProps = {
 export function ProductEditor({ product, sections }: ProductEditorProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [images, setImages] = useState<ProductImageItem[]>(
     product?.images.map((image, index) => ({
@@ -45,9 +46,53 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
       sortOrder: image.sortOrder ?? index,
     })) ?? [],
   );
-  const [newFiles, setNewFiles] = useState<File[]>([]);
 
   const priceValue = product ? (product.priceCents / 100).toFixed(2) : undefined;
+
+  async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const selectedFiles = Array.from(input.files ?? []);
+    input.value = "";
+
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    setIsUploadingImages(true);
+
+    try {
+      const uploadFormData = new FormData();
+      selectedFiles.forEach((file) => uploadFormData.append("files", file));
+
+      const uploadResponse = await fetch("/api/admin/uploads/product-image", {
+        method: "POST",
+        body: uploadFormData,
+      });
+      const uploadData = (await uploadResponse.json()) as {
+        message?: string;
+        imageUrls?: string[];
+      };
+
+      if (!uploadResponse.ok || !uploadData.imageUrls) {
+        toast.error(uploadData.message ?? "Image upload failed.");
+        return;
+      }
+
+      const { imageUrls } = uploadData;
+      setImages((current) => [
+        ...current,
+        ...imageUrls.map((imageUrl, index) => ({
+          imageUrl,
+          altText: "",
+          isMain: false,
+          sortOrder: current.length + index,
+        })),
+      ]);
+      toast.success("Images uploaded. Choose a main image before saving.");
+    } finally {
+      setIsUploadingImages(false);
+    }
+  }
 
   return (
     <form
@@ -58,47 +103,11 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
         setErrors({});
         const form = event.currentTarget;
 
-        let nextImages = [...images];
-
-        if (newFiles.length > 0) {
-          const uploadFormData = new FormData();
-          newFiles.forEach((file) => uploadFormData.append("files", file));
-
-          const uploadResponse = await fetch("/api/admin/uploads/product-image", {
-            method: "POST",
-            body: uploadFormData,
-          });
-          const uploadData = (await uploadResponse.json()) as {
-            message?: string;
-            imageUrls?: string[];
-          };
-
-          if (!uploadResponse.ok || !uploadData.imageUrls) {
-            toast.error(uploadData.message ?? "Image upload failed.");
-            setPending(false);
-            return;
-          }
-
-          nextImages = [
-            ...nextImages,
-            ...uploadData.imageUrls.map((imageUrl, index) => ({
-              imageUrl,
-              altText: "",
-              isMain: nextImages.length === 0 && index === 0,
-              sortOrder: nextImages.length + index,
-            })),
-          ];
-        }
-
-        if (!nextImages.some((image) => image.isMain) && nextImages[0]) {
-          nextImages = nextImages.map((image, index) => ({
-            ...image,
-            isMain: index === 0,
-          }));
-        }
-
+        const nextImages = images.map((image, index) => ({
+          ...image,
+          sortOrder: index,
+        }));
         setImages(nextImages);
-        setNewFiles([]);
 
         const formData = new FormData(form);
         const payload = {
@@ -226,19 +235,27 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
               Product images
             </p>
             <p className="mt-2 text-sm text-[var(--ink-700)]">
-              Upload multiple images and choose the main image for product cards.
+              Upload images first, then explicitly choose the main image before saving.
             </p>
           </div>
           <input
             type="file"
             multiple
             accept="image/png,image/jpeg,image/webp"
-            onChange={(event) =>
-              setNewFiles(Array.from(event.currentTarget.files ?? []))
-            }
+            disabled={pending || isUploadingImages}
+            onChange={(event) => {
+              void handleImageUpload(event);
+            }}
             className="max-w-[260px] text-sm"
           />
         </div>
+        <p className="mt-4 text-xs uppercase tracking-[0.24em] text-[var(--ink-500)]">
+          {isUploadingImages
+            ? "Uploading images..."
+            : images.some((image) => image.isMain)
+              ? "Main image selected."
+              : "Select a main image before creating this product."}
+        </p>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {images.map((image, index) => (
@@ -255,6 +272,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
               <label className="mt-3 flex items-center gap-2 text-sm font-medium text-[var(--navy-950)]">
                 <input
                   type="radio"
+                  name="main-image"
                   checked={image.isMain}
                   onChange={() =>
                     setImages((current) =>
@@ -287,12 +305,19 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
       </div>
 
       <div className="mt-8 flex gap-3">
-        <Button type="submit" disabled={pending}>
-          {pending ? "Saving..." : product ? "Update product" : "Create product"}
+        <Button type="submit" disabled={pending || isUploadingImages}>
+          {pending
+            ? "Saving..."
+            : isUploadingImages
+              ? "Uploading images..."
+              : product
+                ? "Update product"
+                : "Create product"}
         </Button>
         <Button
           type="button"
           variant="secondary"
+          disabled={pending || isUploadingImages}
           onClick={() => router.push("/admin/products")}
         >
           Cancel

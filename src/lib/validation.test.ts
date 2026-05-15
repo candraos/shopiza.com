@@ -131,4 +131,25 @@ describe("validation schemas", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("rejects products without an explicitly selected main image", () => {
+    const result = productSchema.safeParse({
+      name: "Test Product",
+      description: "A product description that is definitely long enough.",
+      price: "1499.99",
+      stock: 3,
+      sectionId: "",
+      archived: false,
+      images: [
+        {
+          imageUrl: "/media/products/test-product/1",
+          altText: "",
+          isMain: false,
+          sortOrder: 0,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
 });

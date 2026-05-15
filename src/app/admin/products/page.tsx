@@ -22,6 +22,12 @@ export default async function AdminProductsPage() {
           stock: product.stock,
           priceCents: product.priceCents,
           archived: product.archived,
+          mainImage: product.mainImage
+            ? {
+                imageUrl: product.mainImage.imageUrl,
+                altText: product.mainImage.altText,
+              }
+            : null,
           section: product.section
             ? {
                 name: product.section.name,
