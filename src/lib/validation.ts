@@ -29,10 +29,6 @@ export const registrationSchema = z
     phoneNumber: phoneSchema,
     password: passwordSchema,
     confirmPassword: z.string(),
-    locationAccessGranted: z.boolean(),
-    locationLabel: z.string().max(160).optional().or(z.literal("")),
-    locationLatitude: z.number().optional().nullable(),
-    locationLongitude: z.number().optional().nullable(),
   })
   .refine((value) => value.password === value.confirmPassword, {
     path: ["confirmPassword"],
@@ -45,12 +41,12 @@ export const loginSchema = z.object({
 });
 
 export const verificationRequestSchema = z.object({
-  userId: z.uuid(),
+  registrationId: z.uuid(),
   channel: z.enum(["EMAIL", "SMS"]),
 });
 
 export const verificationConfirmSchema = z.object({
-  userId: z.uuid(),
+  registrationId: z.uuid(),
   channel: z.enum(["EMAIL", "SMS"]),
   code: z.string().length(6, "Enter the 6-digit verification code."),
 });

@@ -1,5 +1,9 @@
-import { prisma } from "@/lib/prisma";
-import { issueVerificationCodeForUser, verifyUserCode } from "@/lib/services/auth";
+import {
+  ConflictError,
+  findPendingRegistrationById,
+  issueVerificationCodeForPendingRegistration,
+  verifyPendingRegistrationCode,
+} from "@/lib/services/auth";
 import { jsonError, jsonResponse } from "@/lib/http";
 import { enforceRateLimit, RateLimitError } from "@/lib/security/rate-limit";
 import { assertSameOrigin, getClientIp } from "@/lib/security/request";
@@ -30,25 +34,19 @@ export async function POST(request: Request) {
       );
     }
 
-    await verifyUserCode(payload.data);
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: payload.data.userId,
-      },
-      select: {
-        emailVerified: true,
-        phoneVerified: true,
-      },
-    });
+    const result = await verifyPendingRegistrationCode(payload.data);
 
     return jsonResponse({
       success: true,
-      fullyVerified: user?.emailVerified && user?.phoneVerified,
+      fullyVerified: result.fullyVerified,
     });
   } catch (error) {
     if (error instanceof RateLimitError) {
       return jsonError(error.message, 429);
+    }
+
+    if (error instanceof ConflictError) {
+      return jsonError(error.message, 409);
     }
 
     if (error instanceof Error) {
@@ -81,34 +79,18 @@ export async function PUT(request: Request) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: payload.data.userId,
-      },
-      select: {
-        id: true,
-        fullName: true,
-        username: true,
-        email: true,
-        phoneNumber: true,
-        role: true,
-        passwordHash: true,
-        emailVerified: true,
-        phoneVerified: true,
-        locationAccessGranted: true,
-        locationLabel: true,
-        locationLatitude: true,
-        locationLongitude: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const registration = await findPendingRegistrationById(
+      payload.data.registrationId,
+    );
 
-    if (!user) {
-      return jsonError("User not found.", 404);
+    if (!registration) {
+      return jsonError("Pending registration not found or expired.", 404);
     }
 
-    await issueVerificationCodeForUser(user, payload.data.channel);
+    await issueVerificationCodeForPendingRegistration(
+      registration,
+      payload.data.channel,
+    );
 
     return jsonResponse({
       success: true,

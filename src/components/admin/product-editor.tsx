@@ -57,6 +57,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
       onSubmit={async (event) => {
         event.preventDefault();
         setPending(true);
+        const form = event.currentTarget;
 
         let nextImages = [...images];
 
@@ -94,7 +95,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
           nextImages[0].isMain = true;
         }
 
-        const formData = new FormData(event.currentTarget);
+        const formData = new FormData(form);
         const payload = {
           name: String(formData.get("name") ?? ""),
           description: String(formData.get("description") ?? ""),

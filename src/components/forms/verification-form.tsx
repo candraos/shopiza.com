@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { TextField } from "@/components/ui/field";
 
-export function VerificationForm({ userId }: { userId: string }) {
+export function VerificationForm({ registrationId }: { registrationId: string }) {
   const router = useRouter();
   const [pendingChannel, setPendingChannel] = useState<"EMAIL" | "SMS" | null>(null);
   const [completed, setCompleted] = useState<Record<"EMAIL" | "SMS", boolean>>({
@@ -20,7 +20,7 @@ export function VerificationForm({ userId }: { userId: string }) {
     const response = await fetch("/api/auth/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, channel, code }),
+      body: JSON.stringify({ registrationId, channel, code }),
     });
     const data = (await response.json()) as { message?: string; fullyVerified?: boolean };
 
@@ -90,7 +90,7 @@ export function VerificationForm({ userId }: { userId: string }) {
                 const response = await fetch("/api/auth/verify", {
                   method: "PUT",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ userId, channel }),
+                  body: JSON.stringify({ registrationId, channel }),
                 });
                 const data = (await response.json()) as { message?: string };
                 if (!response.ok) {

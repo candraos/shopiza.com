@@ -1,4 +1,8 @@
-import { ConflictError, issueVerificationCodeForUser, registerClientUser } from "@/lib/services/auth";
+import {
+  ConflictError,
+  issueVerificationCodeForPendingRegistration,
+  registerPendingClientUser,
+} from "@/lib/services/auth";
 import { enforceRateLimit, RateLimitError } from "@/lib/security/rate-limit";
 import { assertSameOrigin, getClientIp } from "@/lib/security/request";
 import { registrationSchema } from "@/lib/validation";
@@ -26,17 +30,17 @@ export async function POST(request: Request) {
       windowMs: 15 * 60 * 1000,
     });
 
-    const user = await registerClientUser(payload.data);
+    const registration = await registerPendingClientUser(payload.data);
 
     await Promise.all([
-      issueVerificationCodeForUser(user, "EMAIL"),
-      issueVerificationCodeForUser(user, "SMS"),
+      issueVerificationCodeForPendingRegistration(registration, "EMAIL"),
+      issueVerificationCodeForPendingRegistration(registration, "SMS"),
     ]);
 
     return jsonResponse({
       success: true,
-      userId: user.id,
-      message: "Account created. We sent verification codes to your email and phone.",
+      registrationId: registration.id,
+      message: "Registration started. Verify your email and phone to create the account.",
     });
   } catch (error) {
     if (error instanceof ConflictError) {

@@ -3,9 +3,9 @@ import { VerificationForm } from "@/components/forms/verification-form";
 export default async function VerifyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ userId?: string }>;
+  searchParams: Promise<{ registrationId?: string }>;
 }) {
-  const { userId } = await searchParams;
+  const { registrationId } = await searchParams;
 
   return (
     <div className="container-shell py-12">
@@ -17,14 +17,14 @@ export default async function VerifyPage({
           Verify your email and phone
         </h1>
         <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
-          Enter the codes sent during registration. In development, codes are also logged safely in the server output.
+          Enter both codes to finish registration. Your account will only be created after email and phone verification succeed.
         </p>
         <div className="mt-8">
-          {userId ? (
-            <VerificationForm userId={userId} />
+          {registrationId ? (
+            <VerificationForm registrationId={registrationId} />
           ) : (
             <p className="rounded-2xl bg-[rgba(214,47,85,0.08)] px-4 py-3 text-sm text-[var(--danger-500)]">
-              Missing user verification reference. Register first to receive verification codes.
+              Missing registration verification reference. Register first to receive verification codes.
             </p>
           )}
         </div>

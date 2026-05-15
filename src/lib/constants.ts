@@ -6,6 +6,7 @@ export const SUPPORT_WHATSAPP =
 export const AUTH_COOKIE_NAME = "shopiza_session";
 export const CART_RESERVATION_WINDOW_MINUTES = 30;
 export const VERIFICATION_CODE_TTL_MINUTES = 15;
+export const PENDING_REGISTRATION_TTL_MINUTES = 24 * 60;
 export const PASSWORD_RESET_TTL_MINUTES = 15;
 export const MAX_PRODUCT_IMAGE_BYTES = 4 * 1024 * 1024;
 export const ALLOWED_PRODUCT_IMAGE_TYPES = [

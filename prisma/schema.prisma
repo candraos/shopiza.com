@@ -78,6 +78,32 @@ model User {
   @@index([createdAt])
 }
 
+model PendingRegistration {
+  id                    String                    @id @default(uuid())
+  fullName              String
+  username              String
+  usernameNormalized    String                    @unique
+  email                 String
+  emailNormalized       String                    @unique
+  phoneNumber           String
+  phoneNumberNormalized String                    @unique
+  passwordHash          String
+  role                  UserRole                  @default(CLIENT)
+  emailVerified         Boolean                   @default(false)
+  phoneVerified         Boolean                   @default(false)
+  locationAccessGranted Boolean                   @default(false)
+  locationLabel         String?
+  locationLatitude      Float?
+  locationLongitude     Float?
+  expiresAt             DateTime
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  verificationCodes     PendingRegistrationCode[]
+
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
 model VerificationCode {
   id          String              @id @default(uuid())
   userId      String
@@ -92,6 +118,23 @@ model VerificationCode {
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, purpose, channel])
+  @@index([expiresAt])
+}
+
+model PendingRegistrationCode {
+  id                    String                @id @default(uuid())
+  pendingRegistrationId String
+  channel               VerificationChannel
+  purpose               VerificationPurpose
+  destination           String
+  codeHash              String
+  expiresAt             DateTime
+  consumedAt            DateTime?
+  attempts              Int                   @default(0)
+  createdAt             DateTime              @default(now())
+  pendingRegistration   PendingRegistration   @relation(fields: [pendingRegistrationId], references: [id], onDelete: Cascade)
+
+  @@index([pendingRegistrationId, purpose, channel])
   @@index([expiresAt])
 }
 

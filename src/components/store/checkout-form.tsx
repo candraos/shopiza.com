@@ -34,8 +34,9 @@ export function CheckoutForm({
           Checkout for {userName}
         </h1>
         <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
-          Cash on delivery only. Choose your current location or another address
-          selected from Google Maps and we’ll store it with your order.
+          Cash on delivery only. For this order, use Google Maps below to either
+          pick your current location or choose another destination. We store that
+          delivery selection with this order.
         </p>
         <div className="mt-8">
           <LocationPicker value={location} onChange={setLocation} />

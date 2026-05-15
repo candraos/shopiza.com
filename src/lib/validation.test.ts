@@ -15,10 +15,6 @@ describe("validation schemas", () => {
       phoneNumber: "+9613111222",
       password: "weak",
       confirmPassword: "weak",
-      locationAccessGranted: false,
-      locationLabel: "",
-      locationLatitude: null,
-      locationLongitude: null,
     });
 
     expect(result.success).toBe(false);
