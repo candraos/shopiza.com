@@ -16,6 +16,24 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+export function getNextAvailableSlug(baseSlug: string, existingSlugs: string[]) {
+  if (!baseSlug) {
+    throw new Error("Name must include at least one letter or number.");
+  }
+
+  const takenSlugs = new Set(existingSlugs);
+  if (!takenSlugs.has(baseSlug)) {
+    return baseSlug;
+  }
+
+  let suffix = 2;
+  while (takenSlugs.has(`${baseSlug}-${suffix}`)) {
+    suffix += 1;
+  }
+
+  return `${baseSlug}-${suffix}`;
+}
+
 export function normalizeEmail(value: string) {
   return value.trim().toLowerCase();
 }

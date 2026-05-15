@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   calculateDiscountedPriceCents,
+  getNextAvailableSlug,
   normalizePhoneNumber,
   sanitizeText,
 } from "@/lib/utils";
@@ -21,5 +22,21 @@ describe("utils", () => {
 
   it("removes control characters from text input", () => {
     expect(sanitizeText("Hello\u0000 Shopiza")).toBe("Hello Shopiza");
+  });
+
+  it("finds the next available slug suffix", () => {
+    expect(
+      getNextAvailableSlug("breeze-thermostat", [
+        "breeze-thermostat",
+        "breeze-thermostat-2",
+        "breeze-thermostat-3",
+      ]),
+    ).toBe("breeze-thermostat-4");
+  });
+
+  it("throws when a slug would be empty", () => {
+    expect(() => getNextAvailableSlug("", [])).toThrow(
+      "Name must include at least one letter or number.",
+    );
   });
 });

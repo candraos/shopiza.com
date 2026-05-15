@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ type ProductEditorProps = {
 export function ProductEditor({ product, sections }: ProductEditorProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [images, setImages] = useState<ProductImageItem[]>(
     product?.images.map((image, index) => ({
       imageUrl: image.imageUrl,
@@ -46,10 +47,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
   );
   const [newFiles, setNewFiles] = useState<File[]>([]);
 
-  const priceValue = useMemo(
-    () => (product ? (product.priceCents / 100).toFixed(2) : "0.00"),
-    [product],
-  );
+  const priceValue = product ? (product.priceCents / 100).toFixed(2) : undefined;
 
   return (
     <form
@@ -57,6 +55,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
       onSubmit={async (event) => {
         event.preventDefault();
         setPending(true);
+        setErrors({});
         const form = event.currentTarget;
 
         let nextImages = [...images];
@@ -92,8 +91,14 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
         }
 
         if (!nextImages.some((image) => image.isMain) && nextImages[0]) {
-          nextImages[0].isMain = true;
+          nextImages = nextImages.map((image, index) => ({
+            ...image,
+            isMain: index === 0,
+          }));
         }
+
+        setImages(nextImages);
+        setNewFiles([]);
 
         const formData = new FormData(form);
         const payload = {
@@ -119,10 +124,15 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
             body: JSON.stringify(payload),
           },
         );
-        const data = (await response.json()) as { message?: string };
+        const data = (await response.json()) as {
+          message?: string;
+          errors?: Record<string, string[]>;
+        };
 
         if (!response.ok) {
-          toast.error(data.message ?? "Could not save the product.");
+          const firstError = Object.values(data.errors ?? {}).flat()[0];
+          setErrors(data.errors ?? {});
+          toast.error(data.message ?? firstError ?? "Could not save the product.");
           setPending(false);
           return;
         }
@@ -133,37 +143,66 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
       }}
     >
       <div className="grid gap-4 md:grid-cols-2">
-        <TextField
-          label="Product name"
-          name="name"
-          defaultValue={product?.name}
-          placeholder="Product name"
-        />
-        <TextField
-          label="Price"
-          name="price"
-          defaultValue={priceValue}
-          placeholder="1499.00"
-        />
-        <TextField
-          label="Stock"
-          name="stock"
-          type="number"
-          min="0"
-          defaultValue={product?.stock ?? 0}
-        />
-        <SelectField
-          label="Section"
-          name="sectionId"
-          defaultValue={product?.sectionId ?? ""}
-        >
-          <option value="">Unassigned / archive</option>
-          {sections.map((section) => (
-            <option key={section.id} value={section.id}>
-              {section.name}
-            </option>
-          ))}
-        </SelectField>
+        <div>
+          <TextField
+            label="Product name"
+            name="name"
+            defaultValue={product?.name}
+            placeholder="Product name"
+          />
+          {errors.name ? (
+            <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.name[0]}</p>
+          ) : null}
+        </div>
+        <div>
+          <TextField
+            label="Price"
+            name="price"
+            type="number"
+            inputMode="decimal"
+            min="0.01"
+            step="0.01"
+            required
+            defaultValue={priceValue}
+            placeholder="0.00"
+          />
+          {errors.price ? (
+            <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.price[0]}</p>
+          ) : null}
+        </div>
+        <div>
+          <TextField
+            label="Stock"
+            name="stock"
+            type="number"
+            inputMode="numeric"
+            min="1"
+            step="1"
+            required
+            defaultValue={product?.stock}
+            placeholder="0"
+          />
+          {errors.stock ? (
+            <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.stock[0]}</p>
+          ) : null}
+        </div>
+        <div>
+          <SelectField
+            label="Section"
+            name="sectionId"
+            defaultValue={product?.sectionId ?? ""}
+          >
+            <option value="">Unassigned / archive</option>
+            {sections.map((section) => (
+              <option key={section.id} value={section.id}>
+                {section.name}
+              </option>
+            ))}
+          </SelectField>
+          {errors.sectionId ? (
+            <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.sectionId[0]}</p>
+          ) : null}
+        </div>
       </div>
       <div className="mt-4">
         <TextAreaField
@@ -171,6 +210,9 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
           name="description"
           defaultValue={product?.description}
         />
+        {errors.description ? (
+          <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.description[0]}</p>
+        ) : null}
       </div>
       <label className="mt-4 inline-flex items-center gap-3 text-sm font-medium text-[var(--navy-950)]">
         <input type="checkbox" name="archived" defaultChecked={product?.archived} className="h-4 w-4" />
@@ -239,6 +281,9 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
             </article>
           ))}
         </div>
+        {errors.images ? (
+          <p className="mt-4 text-xs text-[var(--danger-500)]">{errors.images[0]}</p>
+        ) : null}
       </div>
 
       <div className="mt-8 flex gap-3">

@@ -94,7 +94,10 @@ export const productSchema = z
     name: z.string().min(2, "Product name is required.").max(120).transform(sanitizeText),
     description: z.string().min(20, "Description must be at least 20 characters.").max(5000).transform(sanitizeText),
     price: z.union([z.string(), z.number()]),
-    stock: z.coerce.number().int().min(0, "Stock cannot be negative."),
+    stock: z.coerce
+      .number()
+      .int("Stock must be a whole number.")
+      .positive("Stock must be greater than 0."),
     sectionId: z.uuid().optional().nullable().or(z.literal("")),
     archived: z.boolean().default(false),
     images: z.array(productImageSchema).min(1, "Upload at least one product image."),
@@ -104,6 +107,10 @@ export const productSchema = z
     priceCents: parseCurrencyInput(value.price),
     sectionId: value.sectionId || null,
   }))
+  .refine((value) => value.priceCents > 0, {
+    path: ["price"],
+    message: "Price must be greater than 0.",
+  })
   .refine((value) => value.images.some((image) => image.isMain), {
     path: ["images"],
     message: "Choose one main product image.",

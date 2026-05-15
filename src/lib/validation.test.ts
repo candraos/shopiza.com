@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   discountSchema,
   passwordResetConfirmSchema,
+  productSchema,
   registrationSchema,
 } from "@/lib/validation";
 
@@ -45,5 +46,89 @@ describe("validation schemas", () => {
 
     expect(result.discountValue).toBe(2500);
     expect(result.discountedPriceCents).toBe(7500);
+  });
+
+  it("accepts decimal prices for products", () => {
+    const result = productSchema.parse({
+      name: "Test Product",
+      description: "A product description that is definitely long enough.",
+      price: "1499.99",
+      stock: 3,
+      sectionId: "",
+      archived: false,
+      images: [
+        {
+          imageUrl: "/media/products/test-product/1",
+          altText: "",
+          isMain: true,
+          sortOrder: 0,
+        },
+      ],
+    });
+
+    expect(result.priceCents).toBe(149999);
+  });
+
+  it("rejects zero or negative product price", () => {
+    const result = productSchema.safeParse({
+      name: "Test Product",
+      description: "A product description that is definitely long enough.",
+      price: "0",
+      stock: 3,
+      sectionId: "",
+      archived: false,
+      images: [
+        {
+          imageUrl: "/media/products/test-product/1",
+          altText: "",
+          isMain: true,
+          sortOrder: 0,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects decimal stock values for products", () => {
+    const result = productSchema.safeParse({
+      name: "Test Product",
+      description: "A product description that is definitely long enough.",
+      price: "1499.99",
+      stock: 3.5,
+      sectionId: "",
+      archived: false,
+      images: [
+        {
+          imageUrl: "/media/products/test-product/1",
+          altText: "",
+          isMain: true,
+          sortOrder: 0,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects zero stock for products", () => {
+    const result = productSchema.safeParse({
+      name: "Test Product",
+      description: "A product description that is definitely long enough.",
+      price: "1499.99",
+      stock: 0,
+      sectionId: "",
+      archived: false,
+      images: [
+        {
+          imageUrl: "/media/products/test-product/1",
+          altText: "",
+          isMain: true,
+          sortOrder: 0,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
   });
 });

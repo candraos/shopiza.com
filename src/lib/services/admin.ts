@@ -1,7 +1,37 @@
 import "server-only";
 
-import { calculateDiscountedPriceCents, slugify } from "@/lib/utils";
+import {
+  calculateDiscountedPriceCents,
+  getNextAvailableSlug,
+  slugify,
+} from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
+
+async function resolveProductSlug(name: string, productId?: string) {
+  const baseSlug = slugify(name);
+  const existingProducts = await prisma.product.findMany({
+    where: {
+      slug: {
+        startsWith: baseSlug,
+      },
+      ...(productId
+        ? {
+            NOT: {
+              id: productId,
+            },
+          }
+        : {}),
+    },
+    select: {
+      slug: true,
+    },
+  });
+
+  return getNextAvailableSlug(
+    baseSlug,
+    existingProducts.map((product) => product.slug),
+  );
+}
 
 export async function createSection(input: {
   name: string;
@@ -70,6 +100,8 @@ export async function upsertProduct(input: {
     sortOrder: number;
   }>;
 }) {
+  const slug = await resolveProductSlug(input.name, input.id);
+
   if (input.id) {
     return prisma.product.update({
       where: {
@@ -77,7 +109,7 @@ export async function upsertProduct(input: {
       },
       data: {
         name: input.name,
-        slug: slugify(input.name),
+        slug,
         description: input.description,
         priceCents: input.priceCents,
         stock: input.stock,
@@ -97,7 +129,7 @@ export async function upsertProduct(input: {
   return prisma.product.create({
     data: {
       name: input.name,
-      slug: slugify(input.name),
+      slug,
       description: input.description,
       priceCents: input.priceCents,
       stock: input.stock,
