@@ -1,8 +1,7 @@
-import Link from "next/link";
-
 import { type CurrentUser } from "@/lib/auth/current-user";
 import { CartIconLink } from "@/components/store/cart-icon-link";
 import { ShopizaLogo } from "@/components/brand/shopiza-logo";
+import { NavLink } from "@/components/layout/nav-link";
 import { ButtonLink } from "@/components/ui/button";
 import { LogoutButton } from "@/components/layout/logout-button";
 
@@ -14,9 +13,9 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
           <div className="flex items-center gap-8">
             <ShopizaLogo href="/admin" />
             <nav className="hidden items-center gap-6 text-sm font-medium text-[var(--ink-700)] md:flex">
-              <Link href="/admin" className="hover:text-[var(--pink-500)]">
+              <NavLink href="/admin">
                 Admin dashboard
-              </Link>
+              </NavLink>
             </nav>
           </div>
 
@@ -24,9 +23,6 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
             <div className="hidden text-right md:block">
               <p className="text-sm font-semibold text-[var(--navy-950)]">
                 {user.fullName}
-              </p>
-              <p className="text-xs uppercase tracking-[0.24em] text-[var(--ink-500)]">
-                {user.role}
               </p>
             </div>
             <LogoutButton />
@@ -42,19 +38,19 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
         <div className="flex items-center gap-8">
           <ShopizaLogo />
           <nav className="hidden items-center gap-6 text-sm font-medium text-[var(--ink-700)] md:flex">
-            <Link href="/" className="hover:text-[var(--pink-500)]">
+            <NavLink href="/" exact>
               Home
-            </Link>
-            <Link href="/products" className="hover:text-[var(--pink-500)]">
+            </NavLink>
+            <NavLink href="/products">
               Shop
-            </Link>
-            <Link href="/contact" className="hover:text-[var(--pink-500)]">
+            </NavLink>
+            <NavLink href="/contact" exact>
               Contact
-            </Link>
+            </NavLink>
             {user ? (
-              <Link href="/account/orders" className="hover:text-[var(--pink-500)]">
+              <NavLink href="/account/orders">
                 My orders
-              </Link>
+              </NavLink>
             ) : null}
           </nav>
         </div>
@@ -66,9 +62,6 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
               <div className="text-right">
                 <p className="text-sm font-semibold text-[var(--navy-950)]">
                   {user.fullName}
-                </p>
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--ink-500)]">
-                  {user.role}
                 </p>
               </div>
               <LogoutButton />

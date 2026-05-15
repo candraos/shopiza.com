@@ -8,18 +8,18 @@ import { getHomepageData } from "@/lib/services/catalog";
 const trustPillars = [
   {
     icon: ShieldCheck,
-    title: "Secure ordering",
-    description: "Strong validation, safe sessions, and protected backend mutations.",
+    title: "Easy ordering",
+    description: "Pick what you love and place your order without extra steps.",
   },
   {
     icon: Truck,
-    title: "Fast cash-on-delivery flow",
-    description: "Simple checkout, local cart persistence, and clean destination selection.",
+    title: "Simple delivery",
+    description: "Choose your items and complete your order with a smooth delivery flow.",
   },
   {
     icon: Sparkles,
-    title: "Premium curation",
-    description: "Polished storefront design with thoughtful product discovery and support.",
+    title: "Thoughtful picks",
+    description: "Explore a handpicked mix of tech, lifestyle, and everyday favorites.",
   },
 ];
 
@@ -30,20 +30,17 @@ export default async function HomePage() {
   return (
     <div className="space-y-20 pb-20">
       <section className="container-shell grid gap-8 py-14 lg:grid-cols-[1.2fr_0.8fr] lg:py-20">
-        <div className="mesh-accent spotlight-border relative overflow-hidden rounded-[40px] p-8 text-white shadow-[0_30px_70px_rgba(18,24,60,0.18)] md:p-12">
-          <div className="relative max-w-2xl space-y-6">
-            <span className="inline-flex rounded-full border border-white/16 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.34em] text-white/80">
-              Modern Ecommerce
-            </span>
+        <div className="mesh-accent spotlight-border relative flex items-center justify-center overflow-hidden rounded-[40px] p-8 text-white shadow-[0_30px_70px_rgba(18,24,60,0.18)] md:p-12">
+          <div className="relative mx-auto flex max-w-2xl flex-col items-center space-y-6 text-center">
             <h1 className="display-title text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-              Shop premium essentials with a faster, cleaner, more trustworthy flow.
+              Shop everyday essentials with a faster, cleaner, more trustworthy flow.
             </h1>
             <p className="max-w-xl text-base leading-8 text-white/78 sm:text-lg">
-              Discover curated tech, lifestyle, and everyday upgrades through a
-              storefront designed around speed, clarity, and a premium shopping feel.
+              Discover tech, lifestyle, and everyday finds through a storefront
+              designed around clarity, comfort, and easy browsing.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/products">Browse catalog</ButtonLink>
+            <div className="flex flex-wrap justify-center gap-3">
+              <ButtonLink href="/products">Browse products</ButtonLink>
               <ButtonLink href="/contact" variant="secondary" className="border-white/20 bg-white/10 text-white hover:bg-white/14 hover:text-white">
                 Contact support
               </ButtonLink>
@@ -78,8 +75,13 @@ export default async function HomePage() {
               Explore by section
             </h2>
           </div>
-          <ButtonLink href="/products" variant="ghost" className="hidden md:inline-flex">
+          <ButtonLink
+            href="/products"
+            variant="secondary"
+            className="hidden shadow-[0_14px_30px_rgba(18,26,56,0.08)] md:inline-flex"
+          >
             View all
+            <ArrowRight className="ml-2 h-4 w-4" />
           </ButtonLink>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -117,8 +119,13 @@ export default async function HomePage() {
               New arrivals
             </h2>
           </div>
-          <ButtonLink href="/products" variant="ghost" className="hidden md:inline-flex">
-            Shop everything
+          <ButtonLink
+            href="/products"
+            variant="secondary"
+            className="hidden shadow-[0_14px_30px_rgba(18,26,56,0.08)] md:inline-flex"
+          >
+            View all
+            <ArrowRight className="ml-2 h-4 w-4" />
           </ButtonLink>
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -138,8 +145,13 @@ export default async function HomePage() {
               Discounted right now
             </h2>
           </div>
-          <ButtonLink href="/products" variant="ghost" className="hidden md:inline-flex">
-            Browse deals
+          <ButtonLink
+            href="/products"
+            variant="secondary"
+            className="hidden shadow-[0_14px_30px_rgba(18,26,56,0.08)] md:inline-flex"
+          >
+            View all
+            <ArrowRight className="ml-2 h-4 w-4" />
           </ButtonLink>
         </div>
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">

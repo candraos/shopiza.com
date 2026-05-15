@@ -31,16 +31,10 @@ export default async function AccountOrdersPage({
 
   return (
     <div className="container-shell space-y-8 py-12">
-      <div className="glass-card rounded-[36px] p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--pink-500)]">
-          Account
-        </p>
-        <h1 className="mt-3 display-title text-4xl font-semibold text-[var(--navy-950)]">
+      <div className="glass-card rounded-[36px] p-8 text-center">
+        <h1 className="display-title text-4xl font-semibold text-[var(--navy-950)]">
           Your orders
         </h1>
-        <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
-          Orders are shown from most recent to oldest, with live status tracking.
-        </p>
       </div>
 
       {orders.length === 0 ? (

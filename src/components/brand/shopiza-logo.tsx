@@ -21,13 +21,8 @@ export function ShopizaLogo({
         <span className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,120,193,0.7),transparent_42%),linear-gradient(135deg,#7b4dff,#f447a1)] opacity-90" />
         <span className="relative text-xl font-bold text-white">S</span>
       </span>
-      <span className="flex flex-col leading-none">
-        <span className="display-title text-xl font-semibold tracking-tight text-[var(--navy-950)]">
-          Shopiza
-        </span>
-        <span className="text-xs font-medium uppercase tracking-[0.28em] text-[var(--ink-500)]">
-          Premium Commerce
-        </span>
+      <span className="display-title text-xl font-semibold tracking-tight text-[var(--navy-950)]">
+        Shopiza
       </span>
     </Link>
   );

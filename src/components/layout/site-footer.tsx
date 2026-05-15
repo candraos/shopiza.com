@@ -9,10 +9,6 @@ export function SiteFooter({ supportEmail }: { supportEmail: string }) {
       <div className="container-shell grid gap-10 py-14 md:grid-cols-[1.5fr_1fr_1fr]">
         <div className="space-y-4">
           <ShopizaLogo />
-          <p className="max-w-md text-sm leading-7 text-[var(--ink-700)]">
-            Premium ecommerce for modern shoppers. Explore polished product discovery,
-            dependable order flows, and fast support when you need it.
-          </p>
         </div>
         <div>
           <h3 className="display-title text-lg font-semibold text-[var(--navy-950)]">
