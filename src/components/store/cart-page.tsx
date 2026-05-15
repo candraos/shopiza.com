@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useCart } from "@/components/store/cart-provider";
 import { QuantityStepper } from "@/components/store/quantity-stepper";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 export function CartPageClient() {
   const { cart, isReady, isMutating, setQuantity, clearCart } = useCart();
@@ -29,7 +29,7 @@ export function CartPageClient() {
       <div className="container-shell py-12">
         <EmptyState
           title="Your cart is empty"
-          description="Browse products and reserve premium picks before checking out."
+          description="Browse products and add your favorites before checking out."
           ctaLabel="Browse products"
           ctaHref="/products"
         />
@@ -100,19 +100,13 @@ export function CartPageClient() {
         </h1>
         <div className="mt-8 space-y-4 text-sm text-[var(--ink-700)]">
           <div className="flex justify-between">
-            <span>Reserved items</span>
+            <span>Items</span>
             <span>{cart.itemCount}</span>
           </div>
           <div className="flex justify-between">
             <span>Subtotal</span>
             <span className="font-semibold text-[var(--navy-950)]">
               {formatCurrency(cart.subtotalCents)}
-            </span>
-          </div>
-          <div className="rounded-2xl bg-[rgba(244,71,161,0.06)] px-4 py-3">
-            Reservation expires:{" "}
-            <span className="font-semibold text-[var(--navy-950)]">
-              {cart.expiresAt ? formatDateTime(cart.expiresAt) : "Not set"}
             </span>
           </div>
         </div>

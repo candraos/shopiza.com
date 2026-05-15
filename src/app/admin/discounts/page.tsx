@@ -7,6 +7,7 @@ export default async function AdminDiscountsPage() {
     getAdminDiscounts(),
     getAdminProducts(),
   ]);
+  const availableProducts = products.filter((product) => !product.activeDiscount);
 
   return (
     <div className="space-y-6">
@@ -20,7 +21,7 @@ export default async function AdminDiscountsPage() {
       </div>
       <DiscountsManager
         discounts={discounts}
-        products={products.map((product) => ({
+        products={availableProducts.map((product) => ({
           id: product.id,
           name: product.name,
           priceCents: product.priceCents,

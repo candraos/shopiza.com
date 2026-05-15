@@ -92,7 +92,8 @@ export function SectionsManager({ sections }: { sections: SectionItem[] }) {
         onSubmit={async (event) => {
           event.preventDefault();
           setPending(true);
-          const formData = new FormData(event.currentTarget);
+          const form = event.currentTarget;
+          const formData = new FormData(form);
           const payload = {
             name: String(formData.get("name") ?? ""),
             description: String(formData.get("description") ?? ""),
@@ -116,9 +117,9 @@ export function SectionsManager({ sections }: { sections: SectionItem[] }) {
 
           toast.success(editing ? "Section updated." : "Section created.");
           setEditing(null);
-          event.currentTarget.reset();
-          setPending(false);
+          form.reset();
           router.refresh();
+          setPending(false);
         }}
       >
         <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--pink-500)]">

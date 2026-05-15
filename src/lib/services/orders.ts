@@ -33,11 +33,7 @@ export async function createOrderFromReservation(input: {
     });
 
     if (!reservation || reservation.items.length === 0) {
-      throw new Error("Your cart is empty or expired.");
-    }
-
-    if (reservation.expiresAt.getTime() < Date.now()) {
-      throw new Error("Your cart reservation expired. Please review your cart again.");
+      throw new Error("Your cart is empty.");
     }
 
     const user = await transaction.user.findUnique({

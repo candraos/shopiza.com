@@ -38,6 +38,7 @@ export function DiscountsManager({
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const hasAvailableProducts = products.length > 0;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
@@ -135,13 +136,27 @@ export function DiscountsManager({
           Create discount
         </p>
         <div className="mt-6 grid gap-4">
-          <SelectField label="Product" name="productId" defaultValue={products[0]?.id}>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name} ({formatCurrency(product.priceCents)})
-              </option>
-            ))}
+          <SelectField
+            label="Product"
+            name="productId"
+            defaultValue={products[0]?.id ?? ""}
+            disabled={!hasAvailableProducts}
+          >
+            {hasAvailableProducts ? (
+              products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {product.name} ({formatCurrency(product.priceCents)})
+                </option>
+              ))
+            ) : (
+              <option value="">No products available</option>
+            )}
           </SelectField>
+          {!hasAvailableProducts ? (
+            <p className="text-xs text-[var(--ink-500)]">
+              Products with a current discount are hidden from this list.
+            </p>
+          ) : null}
           <SelectField label="Discount type" name="type" defaultValue="PERCENTAGE">
             <option value="PERCENTAGE">Percentage</option>
             <option value="FIXED_AMOUNT">Fixed amount</option>
@@ -153,7 +168,7 @@ export function DiscountsManager({
             <input type="checkbox" name="isActive" defaultChecked className="h-4 w-4" />
             Active immediately
           </label>
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || !hasAvailableProducts}>
             {pending ? "Saving..." : "Create discount"}
           </Button>
         </div>

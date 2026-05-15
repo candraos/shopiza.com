@@ -4,7 +4,6 @@ export const SUPPORT_EMAIL =
 export const SUPPORT_WHATSAPP =
   process.env.SHOPIZA_SUPPORT_WHATSAPP ?? "+9613118776";
 export const AUTH_COOKIE_NAME = "shopiza_session";
-export const CART_RESERVATION_WINDOW_MINUTES = 30;
 export const VERIFICATION_CODE_TTL_MINUTES = 15;
 export const PENDING_REGISTRATION_TTL_MINUTES = 24 * 60;
 export const PASSWORD_RESET_TTL_MINUTES = 15;

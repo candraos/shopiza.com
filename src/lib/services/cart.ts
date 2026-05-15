@@ -2,7 +2,6 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 
-import { CART_RESERVATION_WINDOW_MINUTES } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import { decorateProduct } from "@/lib/services/catalog";
 
@@ -29,54 +28,7 @@ type TransactionClient = Prisma.TransactionClient;
 type CartRecord = Prisma.CartReservationGetPayload<typeof cartArgs>;
 
 function reservationExpiry() {
-  return new Date(Date.now() + CART_RESERVATION_WINDOW_MINUTES * 60 * 1000);
-}
-
-async function cleanupExpiredReservations(transaction: TransactionClient) {
-  const expiredReservations = await transaction.cartReservation.findMany({
-    where: {
-      convertedAt: null,
-      expiresAt: {
-        lt: new Date(),
-      },
-    },
-    include: {
-      items: true,
-    },
-  });
-
-  for (const reservation of expiredReservations) {
-    for (const item of reservation.items) {
-      await transaction.product.update({
-        where: {
-          id: item.productId,
-        },
-        data: {
-          stock: {
-            increment: item.quantity,
-          },
-        },
-      });
-    }
-  }
-
-  if (expiredReservations.length > 0) {
-    await transaction.cartReservationItem.deleteMany({
-      where: {
-        reservationId: {
-          in: expiredReservations.map((reservation) => reservation.id),
-        },
-      },
-    });
-
-    await transaction.cartReservation.deleteMany({
-      where: {
-        id: {
-          in: expiredReservations.map((reservation) => reservation.id),
-        },
-      },
-    });
-  }
+  return new Date("9999-12-31T23:59:59.999Z");
 }
 
 async function getOrCreateReservation(
@@ -143,7 +95,7 @@ function formatCart(reservation: CartRecord | null) {
 
   return {
     sessionId: reservation.sessionId,
-    expiresAt: reservation.expiresAt,
+    expiresAt: null,
     itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
     subtotalCents: items.reduce((sum, item) => sum + item.totalPriceCents, 0),
     items,
@@ -169,7 +121,6 @@ async function currentUnitPriceCents(transaction: TransactionClient, productId: 
 
 export async function getCartBySessionId(sessionId: string) {
   return prisma.$transaction(async (transaction) => {
-    await cleanupExpiredReservations(transaction);
     return readCart(transaction, sessionId);
   });
 }
@@ -181,8 +132,6 @@ export async function addToCart(input: {
   userId?: string;
 }) {
   return prisma.$transaction(async (transaction) => {
-    await cleanupExpiredReservations(transaction);
-
     const reservation = await getOrCreateReservation(
       transaction,
       input.sessionId,
@@ -251,8 +200,6 @@ export async function setCartItemQuantity(input: {
   quantity: number;
 }) {
   return prisma.$transaction(async (transaction) => {
-    await cleanupExpiredReservations(transaction);
-
     const reservation = await transaction.cartReservation.findUnique({
       where: {
         sessionId: input.sessionId,
@@ -329,15 +276,6 @@ export async function setCartItemQuantity(input: {
       });
     }
 
-    await transaction.cartReservation.update({
-      where: {
-        id: reservation.id,
-      },
-      data: {
-        expiresAt: reservationExpiry(),
-      },
-    });
-
     await transaction.cartReservationItem.update({
       where: {
         id: item.id,
@@ -357,8 +295,6 @@ export async function setCartItemQuantity(input: {
 
 export async function clearCart(sessionId: string) {
   return prisma.$transaction(async (transaction) => {
-    await cleanupExpiredReservations(transaction);
-
     const reservation = await transaction.cartReservation.findUnique({
       where: {
         sessionId,
