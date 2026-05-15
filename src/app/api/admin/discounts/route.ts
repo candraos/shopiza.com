@@ -14,7 +14,11 @@ export async function POST(request: Request) {
 
     const payload = discountSchema.safeParse(await request.json());
     if (!payload.success) {
-      return jsonResponse({ success: false, errors: payload.error.flatten().fieldErrors }, { status: 400 });
+      const errors = payload.error.flatten().fieldErrors;
+      const message =
+        Object.values(errors).flat()[0] ?? "Please correct the discount details.";
+
+      return jsonResponse({ success: false, message, errors }, { status: 400 });
     }
 
     const discount = await upsertDiscount({

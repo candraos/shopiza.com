@@ -122,11 +122,18 @@ export const discountSchema = z
     type: z.enum(["PERCENTAGE", "FIXED_AMOUNT"]),
     value: z.coerce.number().int().min(1),
     priceCents: z.coerce.number().int().min(0),
-    startAt: z.string().min(1),
+    startAt: z.string().optional().or(z.literal("")),
     endAt: z.string().min(1),
-    isActive: z.boolean(),
+    startImmediately: z.boolean().default(false),
+    isActive: z.boolean().default(true),
+  })
+  .refine((value) => value.startImmediately || Boolean(value.startAt), {
+    path: ["startAt"],
+    message: "Start time is required unless the discount starts immediately.",
   })
   .transform((value) => {
+    const startAt = value.startImmediately ? new Date() : new Date(value.startAt ?? "");
+    const endAt = new Date(value.endAt);
     const discountedPriceCents = calculateDiscountedPriceCents(
       value.priceCents,
       value.type,
@@ -135,11 +142,19 @@ export const discountSchema = z
 
     return {
       ...value,
-      startAt: new Date(value.startAt),
-      endAt: new Date(value.endAt),
+      startAt,
+      endAt,
       discountValue: value.type === "FIXED_AMOUNT" ? value.value * 100 : value.value,
       discountedPriceCents,
     };
+  })
+  .refine((value) => !Number.isNaN(value.startAt.getTime()), {
+    path: ["startAt"],
+    message: "Enter a valid start time.",
+  })
+  .refine((value) => !Number.isNaN(value.endAt.getTime()), {
+    path: ["endAt"],
+    message: "Enter a valid end time.",
   })
   .refine((value) => value.endAt.getTime() > value.startAt.getTime(), {
     path: ["endAt"],

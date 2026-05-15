@@ -7,7 +7,12 @@ export default async function AdminDiscountsPage() {
     getAdminDiscounts(),
     getAdminProducts(),
   ]);
-  const availableProducts = products.filter((product) => !product.activeDiscount);
+  const discountedProductIds = new Set(
+    discounts.map((discount) => discount.productId),
+  );
+  const availableProducts = products
+    .filter((product) => !discountedProductIds.has(product.id))
+    .sort((left, right) => left.name.localeCompare(right.name));
 
   return (
     <div className="space-y-6">

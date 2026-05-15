@@ -41,11 +41,45 @@ describe("validation schemas", () => {
       priceCents: 10000,
       startAt: "2026-05-13T10:00",
       endAt: "2026-05-14T10:00",
+      startImmediately: false,
       isActive: true,
     });
 
     expect(result.discountValue).toBe(2500);
     expect(result.discountedPriceCents).toBe(7500);
+  });
+
+  it("uses the current server time when a discount starts immediately", () => {
+    const before = Date.now();
+    const result = discountSchema.parse({
+      productId: crypto.randomUUID(),
+      type: "PERCENTAGE",
+      value: 20,
+      priceCents: 10000,
+      startAt: "",
+      endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      startImmediately: true,
+      isActive: true,
+    });
+    const after = Date.now();
+
+    expect(result.startAt.getTime()).toBeGreaterThanOrEqual(before);
+    expect(result.startAt.getTime()).toBeLessThanOrEqual(after);
+  });
+
+  it("requires a start time when the discount does not start immediately", () => {
+    const result = discountSchema.safeParse({
+      productId: crypto.randomUUID(),
+      type: "PERCENTAGE",
+      value: 20,
+      priceCents: 10000,
+      startAt: "",
+      endAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      startImmediately: false,
+      isActive: true,
+    });
+
+    expect(result.success).toBe(false);
   });
 
   it("accepts decimal prices for products", () => {

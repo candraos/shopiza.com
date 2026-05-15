@@ -162,26 +162,62 @@ export async function upsertDiscount(input: {
   endAt: Date;
   isActive: boolean;
 }) {
-  const product = await prisma.product.findUniqueOrThrow({
-    where: {
-      id: input.productId,
-    },
-    select: {
-      priceCents: true,
-    },
-  });
-
-  const discountedPriceCents = calculateDiscountedPriceCents(
-    product.priceCents,
-    input.type,
-    input.type === "FIXED_AMOUNT" ? input.value : input.value,
-  );
-
-  if (input.id) {
-    return prisma.discount.update({
+  return prisma.$transaction(async (transaction) => {
+    const existingDiscount = await transaction.discount.findFirst({
       where: {
-        id: input.id,
+        productId: input.productId,
+        ...(input.id
+          ? {
+              NOT: {
+                id: input.id,
+              },
+            }
+          : {}),
       },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingDiscount) {
+      throw new Error(
+        "This product already has a discount. Delete it before creating another.",
+      );
+    }
+
+    const product = await transaction.product.findUniqueOrThrow({
+      where: {
+        id: input.productId,
+      },
+      select: {
+        priceCents: true,
+      },
+    });
+
+    const discountedPriceCents = calculateDiscountedPriceCents(
+      product.priceCents,
+      input.type,
+      input.type === "FIXED_AMOUNT" ? input.value : input.value,
+    );
+
+    if (input.id) {
+      return transaction.discount.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          productId: input.productId,
+          type: input.type,
+          value: input.value,
+          discountedPriceCents,
+          startAt: input.startAt,
+          endAt: input.endAt,
+          isActive: input.isActive,
+        },
+      });
+    }
+
+    return transaction.discount.create({
       data: {
         productId: input.productId,
         type: input.type,
@@ -192,18 +228,6 @@ export async function upsertDiscount(input: {
         isActive: input.isActive,
       },
     });
-  }
-
-  return prisma.discount.create({
-    data: {
-      productId: input.productId,
-      type: input.type,
-      value: input.value,
-      discountedPriceCents,
-      startAt: input.startAt,
-      endAt: input.endAt,
-      isActive: input.isActive,
-    },
   });
 }
 
