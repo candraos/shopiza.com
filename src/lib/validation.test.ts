@@ -55,7 +55,6 @@ describe("validation schemas", () => {
       price: "1499.99",
       stock: 3,
       sectionId: "",
-      archived: false,
       images: [
         {
           imageUrl: "/media/products/test-product/1",
@@ -67,6 +66,7 @@ describe("validation schemas", () => {
     });
 
     expect(result.priceCents).toBe(149999);
+    expect(result.archived).toBe(false);
   });
 
   it("rejects zero or negative product price", () => {
@@ -76,7 +76,6 @@ describe("validation schemas", () => {
       price: "0",
       stock: 3,
       sectionId: "",
-      archived: false,
       images: [
         {
           imageUrl: "/media/products/test-product/1",
@@ -97,7 +96,6 @@ describe("validation schemas", () => {
       price: "1499.99",
       stock: 3.5,
       sectionId: "",
-      archived: false,
       images: [
         {
           imageUrl: "/media/products/test-product/1",
@@ -118,7 +116,6 @@ describe("validation schemas", () => {
       price: "1499.99",
       stock: 0,
       sectionId: "",
-      archived: false,
       images: [
         {
           imageUrl: "/media/products/test-product/1",
@@ -139,7 +136,6 @@ describe("validation schemas", () => {
       price: "1499.99",
       stock: 3,
       sectionId: "",
-      archived: false,
       images: [
         {
           imageUrl: "/media/products/test-product/1",

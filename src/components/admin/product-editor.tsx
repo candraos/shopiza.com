@@ -23,7 +23,6 @@ type ProductEditorProps = {
     description: string;
     priceCents: number;
     stock: number;
-    archived: boolean;
     sectionId: string | null;
     images: ProductImageItem[];
   };
@@ -110,13 +109,14 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
         setImages(nextImages);
 
         const formData = new FormData(form);
+        const sectionId = String(formData.get("sectionId") ?? "");
         const payload = {
           name: String(formData.get("name") ?? ""),
           description: String(formData.get("description") ?? ""),
           price: String(formData.get("price") ?? ""),
           stock: Number(formData.get("stock") ?? "0"),
-          sectionId: String(formData.get("sectionId") ?? ""),
-          archived: formData.get("archived") === "on",
+          sectionId,
+          archived: sectionId === "",
           images: nextImages.map((image, index) => ({
             imageUrl: image.imageUrl,
             altText: image.altText ?? "",
@@ -201,7 +201,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
             name="sectionId"
             defaultValue={product?.sectionId ?? ""}
           >
-            <option value="">Unassigned / archive</option>
+            <option value="">Unassigned</option>
             {sections.map((section) => (
               <option key={section.id} value={section.id}>
                 {section.name}
@@ -223,10 +223,6 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
           <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.description[0]}</p>
         ) : null}
       </div>
-      <label className="mt-4 inline-flex items-center gap-3 text-sm font-medium text-[var(--navy-950)]">
-        <input type="checkbox" name="archived" defaultChecked={product?.archived} className="h-4 w-4" />
-        Mark as archived/unassigned
-      </label>
 
       <div className="mt-8 rounded-[28px] border border-[var(--line-soft)] bg-white p-5">
         <div className="flex items-center justify-between gap-4">
