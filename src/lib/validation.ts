@@ -52,21 +52,19 @@ export const verificationConfirmSchema = z.object({
 });
 
 export const passwordResetRequestSchema = z.object({
-  identifier: z.string().min(3, "Email, username, or phone number is required.").transform(sanitizeText),
-  channel: z.enum(["EMAIL", "SMS"]),
+  email: z.email("Enter a valid email address.").transform((value) => value.trim()),
 });
 
 export const passwordResetConfirmSchema = z
   .object({
-    identifier: z.string().min(3).transform(sanitizeText),
-    channel: z.enum(["EMAIL", "SMS"]),
+    email: z.email("Enter a valid email address.").transform((value) => value.trim()),
     code: z.string().length(6, "Enter the 6-digit verification code."),
     newPassword: passwordSchema,
     confirmNewPassword: z.string(),
   })
   .refine((value) => value.newPassword === value.confirmNewPassword, {
     path: ["confirmNewPassword"],
-    message: "Passwords do not match.",
+    message: "Password fields do not match.",
   });
 
 export const contactSchema = z.object({

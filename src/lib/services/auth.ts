@@ -2,7 +2,6 @@ import "server-only";
 
 import {
   Prisma,
-  type PasswordResetChannel,
   type VerificationChannel,
   type VerificationPurpose,
 } from "@prisma/client";
@@ -88,18 +87,12 @@ export async function findUserByLoginIdentifier(identifier: string) {
   });
 }
 
-export async function findUserByRecoveryIdentifier(identifier: string) {
-  const normalizedEmail = normalizeEmail(identifier);
-  const normalizedUsername = normalizeUsername(identifier);
-  const normalizedPhone = normalizePhoneNumber(identifier);
+export async function findUserByRecoveryEmail(email: string) {
+  const normalizedEmail = normalizeEmail(email);
 
   return prisma.user.findFirst({
     where: {
-      OR: [
-        { emailNormalized: normalizedEmail },
-        { usernameNormalized: normalizedUsername },
-        { phoneNumberNormalized: normalizedPhone },
-      ],
+      emailNormalized: normalizedEmail,
     },
     select: authUserSelect,
   });
@@ -186,22 +179,13 @@ async function deliverVerificationCode(
 
 async function deliverPasswordResetCode(
   user: AuthUser,
-  channel: PasswordResetChannel,
   code: string,
 ) {
-  if (channel === "EMAIL") {
-    await sendMail({
-      to: user.email,
-      subject: "Shopiza password reset code",
-      html: `<p>Your Shopiza password reset code is <strong>${code}</strong>. It expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.</p>`,
-      text: `Your Shopiza password reset code is ${code}. It expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.`,
-    });
-    return;
-  }
-
-  await sendSms({
-    phoneNumber: user.phoneNumber,
-    message: `Shopiza password reset code: ${code}. Expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.`,
+  await sendMail({
+    to: user.email,
+    subject: "Shopiza password reset code",
+    html: `<p>Your Shopiza password reset code is <strong>${code}</strong>. It expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.</p>`,
+    text: `Your Shopiza password reset code is ${code}. It expires in ${PASSWORD_RESET_TTL_MINUTES} minutes.`,
   });
 }
 
@@ -400,8 +384,8 @@ export async function authenticateUser(identifier: string, password: string) {
   return user;
 }
 
-export async function issuePasswordResetCode(identifier: string, channel: PasswordResetChannel) {
-  const user = await findUserByRecoveryIdentifier(identifier);
+export async function issuePasswordResetCode(email: string) {
+  const user = await findUserByRecoveryEmail(email);
 
   if (!user) {
     return;
@@ -415,7 +399,7 @@ export async function issuePasswordResetCode(identifier: string, channel: Passwo
   await prisma.passwordResetCode.deleteMany({
     where: {
       userId: user.id,
-      channel,
+      channel: "EMAIL",
       consumedAt: null,
     },
   });
@@ -423,29 +407,28 @@ export async function issuePasswordResetCode(identifier: string, channel: Passwo
   await prisma.passwordResetCode.create({
     data: {
       userId: user.id,
-      channel,
-      destination: channel === "EMAIL" ? user.email : user.phoneNumber,
+      channel: "EMAIL",
+      destination: user.email,
       codeHash: await hashPassword(code),
       expiresAt,
     },
   });
 
-  await deliverPasswordResetCode(user, channel, code);
+  await deliverPasswordResetCode(user, code);
 
   await logSecurityEvent({
     userId: user.id,
     eventType: "password-reset.requested",
-    message: `Password reset requested via ${channel}.`,
+    message: "Password reset requested via EMAIL.",
   });
 }
 
 export async function resetPasswordWithCode(input: {
-  identifier: string;
-  channel: PasswordResetChannel;
+  email: string;
   code: string;
   newPassword: string;
 }) {
-  const user = await findUserByRecoveryIdentifier(input.identifier);
+  const user = await findUserByRecoveryEmail(input.email);
 
   if (!user) {
     throw new AuthError("Invalid password reset request.");
@@ -454,7 +437,7 @@ export async function resetPasswordWithCode(input: {
   const record = await prisma.passwordResetCode.findFirst({
     where: {
       userId: user.id,
-      channel: input.channel,
+      channel: "EMAIL",
       consumedAt: null,
       expiresAt: {
         gte: new Date(),
@@ -496,6 +479,6 @@ export async function resetPasswordWithCode(input: {
   await logSecurityEvent({
     userId: user.id,
     eventType: "password-reset.completed",
-    message: `Password reset completed via ${input.channel}.`,
+    message: "Password reset completed via EMAIL.",
   });
 }

@@ -1,8 +1,17 @@
-import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
+import { NewPasswordForm } from "@/components/forms/reset-password-form";
 import { redirectAdminHome } from "@/lib/auth/current-user";
 
-export default async function ForgotPasswordPage() {
+export default async function NewPasswordPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    email?: string;
+    code?: string;
+  }>;
+}) {
   await redirectAdminHome();
+
+  const params = await searchParams;
 
   return (
     <div className="container-shell py-12">
@@ -11,13 +20,13 @@ export default async function ForgotPasswordPage() {
           Password reset
         </p>
         <h1 className="mt-3 display-title text-4xl font-semibold text-[var(--navy-950)]">
-          Request a reset code
+          Choose your new password
         </h1>
         <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
-          Enter your account email and we will send a reset code to your inbox.
+          Set a stronger password that differs from your old one.
         </p>
         <div className="mt-8">
-          <ForgotPasswordForm />
+          <NewPasswordForm email={params.email} code={params.code} />
         </div>
       </div>
     </div>

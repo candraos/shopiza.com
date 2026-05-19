@@ -78,18 +78,32 @@ export async function sendMail(input: MailInput) {
     return null;
   }
 
-  const response = await client.emails.send({
-    from: env.email.fromEmail,
-    to: input.to,
-    subject: input.subject,
-    html: input.html,
-    text: input.text,
-    replyTo: input.replyTo,
-  });
+  try {
+    const response = await client.emails.send({
+      from: env.email.fromEmail,
+      to: input.to,
+      subject: input.subject,
+      html: input.html,
+      text: input.text,
+      replyTo: input.replyTo,
+    });
 
-  if (response.error) {
-    throw new Error(response.error.message);
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    return response.data;
+  } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      logEmailError("Falling back to console mail delivery in development.", error, {
+        to: formatRecipients(input.to),
+        subject: input.subject,
+        from: env.email.fromEmail,
+      });
+      console.info(`[mail] Development fallback delivery\n${input.text}`);
+      return null;
+    }
+
+    throw error;
   }
-
-  return response.data;
 }

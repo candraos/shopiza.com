@@ -27,8 +27,7 @@ export async function POST(request: Request) {
     }
 
     await resetPasswordWithCode({
-      identifier: payload.data.identifier,
-      channel: payload.data.channel,
+      email: payload.data.email,
       code: payload.data.code,
       newPassword: payload.data.newPassword,
     });

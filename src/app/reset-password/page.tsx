@@ -1,12 +1,11 @@
-import { ResetPasswordForm } from "@/components/forms/reset-password-form";
+import { ResetPasswordCodeForm } from "@/components/forms/reset-password-form";
 import { redirectAdminHome } from "@/lib/auth/current-user";
 
 export default async function ResetPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    identifier?: string;
-    channel?: string;
+    email?: string;
   }>;
 }) {
   await redirectAdminHome();
@@ -20,16 +19,13 @@ export default async function ResetPasswordPage({
           Password reset
         </p>
         <h1 className="mt-3 display-title text-4xl font-semibold text-[var(--navy-950)]">
-          Choose your new password
+          Enter your verification code
         </h1>
         <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
-          Enter the verification code, then choose a stronger password that differs from your old one.
+          Check your email, then enter the 6-digit code on this page before continuing.
         </p>
         <div className="mt-8">
-          <ResetPasswordForm
-            initialIdentifier={params.identifier}
-            initialChannel={params.channel}
-          />
+          <ResetPasswordCodeForm initialEmail={params.email} />
         </div>
       </div>
     </div>

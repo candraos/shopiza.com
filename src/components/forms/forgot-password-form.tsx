@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { SelectField, TextField } from "@/components/ui/field";
+import { TextField } from "@/components/ui/field";
 
 export function ForgotPasswordForm() {
   const router = useRouter();
@@ -35,19 +35,16 @@ export function ForgotPasswordForm() {
 
         toast.success(data.message ?? "Reset code sent.");
         router.push(
-          `/reset-password?identifier=${encodeURIComponent(String(payload.identifier ?? ""))}&channel=${encodeURIComponent(String(payload.channel ?? "EMAIL"))}`,
+          `/reset-password?email=${encodeURIComponent(String(payload.email ?? ""))}`,
         );
       }}
     >
       <TextField
-        label="Email, username, or phone"
-        name="identifier"
-        placeholder="you@example.com or +961..."
+        label="Email"
+        name="email"
+        type="email"
+        placeholder="you@example.com"
       />
-      <SelectField label="Send code by" name="channel" defaultValue="EMAIL">
-        <option value="EMAIL">Email</option>
-        <option value="SMS">SMS</option>
-      </SelectField>
       <Button type="submit" disabled={pending}>
         {pending ? "Sending..." : "Send reset code"}
       </Button>

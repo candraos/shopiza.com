@@ -23,8 +23,7 @@ describe("validation schemas", () => {
 
   it("rejects password reset when confirmation does not match", () => {
     const result = passwordResetConfirmSchema.safeParse({
-      identifier: "test@example.com",
-      channel: "EMAIL",
+      email: "test@example.com",
       code: "123456",
       newPassword: "NewStrong1",
       confirmNewPassword: "Different1",

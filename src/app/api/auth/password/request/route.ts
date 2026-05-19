@@ -26,10 +26,7 @@ export async function POST(request: Request) {
       );
     }
 
-    await issuePasswordResetCode(
-      payload.data.identifier,
-      payload.data.channel,
-    );
+    await issuePasswordResetCode(payload.data.email);
 
     return jsonResponse({
       success: true,
@@ -38,6 +35,10 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RateLimitError) {
       return jsonError(error.message, 429);
+    }
+
+    if (error instanceof Error) {
+      return jsonError(error.message, 503);
     }
 
     return jsonError("Could not process the reset request.", 500);
