@@ -1,9 +1,24 @@
 import { type CurrentUser } from "@/lib/auth/current-user";
 import { CartIconLink } from "@/components/store/cart-icon-link";
 import { ShopizaLogo } from "@/components/brand/shopiza-logo";
+import { MobileHeaderMenu } from "@/components/layout/mobile-header-menu";
 import { NavLink } from "@/components/layout/nav-link";
 import { ButtonLink } from "@/components/ui/button";
 import { LogoutButton } from "@/components/layout/logout-button";
+
+const adminNavItems = [
+  { href: "/admin", label: "Home", exact: true },
+  { href: "/admin/products", label: "Products" },
+  { href: "/admin/sections", label: "Sections" },
+  { href: "/admin/discounts", label: "Discounts" },
+  { href: "/admin/orders", label: "Orders" },
+] as const;
+
+const clientNavItems = [
+  { href: "/", label: "Home", exact: true },
+  { href: "/products", label: "Shop" },
+  { href: "/contact", label: "Contact", exact: true },
+] as const;
 
 export function SiteHeader({ user }: { user: CurrentUser }) {
   if (user?.role === "ADMIN") {
@@ -32,11 +47,16 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
               </NavLink>
           </nav>
 
-          <div className="flex flex-col items-center gap-2 justify-self-end md:flex-row md:items-center md:gap-3">
+          <div className="flex items-center gap-3 justify-self-end">
+            <MobileHeaderMenu
+              homeHref="/admin"
+              items={[...adminNavItems]}
+              user={{ username: user.username }}
+            />
             <p className="order-2 hidden text-sm font-semibold text-[var(--navy-950)] md:block md:order-none md:text-right">
               {user.username}
             </p>
-            <div className="order-1 md:order-none">
+            <div className="hidden md:block">
               <LogoutButton />
             </div>
           </div>
@@ -70,6 +90,11 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
 
         <div className="flex items-center gap-3">
           <CartIconLink />
+          <MobileHeaderMenu
+            homeHref="/"
+            items={user ? [...clientNavItems, { href: "/account/orders", label: "My orders" }] : [...clientNavItems]}
+            user={user ? { username: user.username } : null}
+          />
           {user ? (
             <div className="hidden items-center gap-3 md:flex">
               <div className="text-right">
