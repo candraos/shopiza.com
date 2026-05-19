@@ -258,6 +258,16 @@ export async function getAdminOrders(input?: {
   });
 }
 
+export async function getAdminUnseenOrderCount(since: Date) {
+  return prisma.order.count({
+    where: {
+      createdAt: {
+        gt: since,
+      },
+    },
+  });
+}
+
 export async function updateOrderStatus(orderId: string, status: OrderStatus) {
   const existingOrder = await prisma.order.findUnique({
     where: {
