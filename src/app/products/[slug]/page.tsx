@@ -5,6 +5,7 @@ import { ProductCarousel } from "@/components/store/product-carousel";
 import { ProductCard } from "@/components/store/product-card";
 import { QuantityPicker } from "@/components/store/product-detail-quantity";
 import { Badge } from "@/components/ui/badge";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 import { formatCurrency } from "@/lib/utils";
 import { getProductBySlug } from "@/lib/services/catalog";
 
@@ -13,6 +14,8 @@ export default async function ProductDetailsPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await redirectAdminHome();
+
   const { slug } = await params;
   const result = await getProductBySlug(slug);
 

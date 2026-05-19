@@ -1,6 +1,9 @@
 import { LoginForm } from "@/components/forms/login-form";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  await redirectAdminHome();
+
   return (
     <div className="container-shell py-12">
       <div className="mx-auto max-w-xl glass-card rounded-[40px] p-8 md:p-10">

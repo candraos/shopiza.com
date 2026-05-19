@@ -1,6 +1,9 @@
 import { ForgotPasswordForm } from "@/components/forms/forgot-password-form";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  await redirectAdminHome();
+
   return (
     <div className="container-shell py-12">
       <div className="mx-auto max-w-xl glass-card rounded-[40px] p-8 md:p-10">

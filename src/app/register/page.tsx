@@ -1,6 +1,9 @@
 import { RegisterForm } from "@/components/forms/register-form";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  await redirectAdminHome();
+
   return (
     <div className="container-shell py-12">
       <div className="mx-auto max-w-3xl glass-card rounded-[40px] p-8 md:p-10">

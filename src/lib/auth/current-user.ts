@@ -64,3 +64,13 @@ export async function requireRole(role: UserRole, redirectTo = "/") {
 export async function requireAdmin() {
   return requireRole("ADMIN");
 }
+
+export async function redirectAdminHome(redirectTo = "/admin") {
+  const user = await getCurrentUser();
+
+  if (user?.role === "ADMIN") {
+    redirect(redirectTo);
+  }
+
+  return user;
+}

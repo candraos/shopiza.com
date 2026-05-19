@@ -1,4 +1,5 @@
 import { ResetPasswordForm } from "@/components/forms/reset-password-form";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 
 export default async function ResetPasswordPage({
   searchParams,
@@ -8,6 +9,8 @@ export default async function ResetPasswordPage({
     channel?: string;
   }>;
 }) {
+  await redirectAdminHome();
+
   const params = await searchParams;
 
   return (

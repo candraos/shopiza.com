@@ -1,10 +1,13 @@
 import { VerificationForm } from "@/components/forms/verification-form";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 
 export default async function VerifyPage({
   searchParams,
 }: {
   searchParams: Promise<{ registrationId?: string }>;
 }) {
+  await redirectAdminHome();
+
   const { registrationId } = await searchParams;
 
   return (

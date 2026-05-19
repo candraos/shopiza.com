@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
 
 import { ProductCard } from "@/components/store/product-card";
 import { ButtonLink } from "@/components/ui/button";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 import { getHomepageData } from "@/lib/services/catalog";
 
 const trustPillars = [
@@ -24,6 +25,8 @@ const trustPillars = [
 ];
 
 export default async function HomePage() {
+  await redirectAdminHome();
+
   const { sections, featuredProducts, discountedProducts } =
     await getHomepageData();
 

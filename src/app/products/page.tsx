@@ -1,6 +1,7 @@
 import { ProductsFilters } from "@/components/store/products-filters";
 import { ProductCard } from "@/components/store/product-card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { redirectAdminHome } from "@/lib/auth/current-user";
 import { getStoreSections, listProducts } from "@/lib/services/catalog";
 
 export default async function ProductsPage({
@@ -11,6 +12,8 @@ export default async function ProductsPage({
     section?: string;
   }>;
 }) {
+  await redirectAdminHome();
+
   const params = await searchParams;
   const [sections, result] = await Promise.all([
     getStoreSections(),
