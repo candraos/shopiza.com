@@ -37,7 +37,7 @@ export default async function AdminSectionsPage({
         </h1>
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4 min-[600px]:flex-row min-[600px]:items-end">
         <div className="flex-1">
           <AdminLiveSearch defaultValue={searchQuery} />
         </div>

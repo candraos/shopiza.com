@@ -21,32 +21,37 @@ export function AdminLiveSearch({
     setValue(defaultValue);
   }, [defaultValue]);
 
+  const applySearch = (nextValue: string) => {
+    const trimmedValue = nextValue.trim();
+    const currentQuery = searchParams.get("query") ?? "";
+    if (trimmedValue === currentQuery) {
+      return;
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
+
+    if (trimmedValue) {
+      params.set("query", trimmedValue);
+    } else {
+      params.delete("query");
+    }
+
+    const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    startTransition(() => {
+      router.replace(nextUrl, { scroll: false });
+    });
+  };
+
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
-      const currentQuery = searchParams.get("query") ?? "";
-      if (value === currentQuery) {
-        return;
-      }
-
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("page");
-
-      if (value.trim()) {
-        params.set("query", value.trim());
-      } else {
-        params.delete("query");
-      }
-
-      const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
-      startTransition(() => {
-        router.replace(nextUrl, { scroll: false });
-      });
+      applySearch(value);
     }, SEARCH_DEBOUNCE_MS);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [pathname, router, searchParams, value]);
+  }, [searchParams, value]);
 
   return (
     <TextField
