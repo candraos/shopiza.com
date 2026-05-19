@@ -187,6 +187,7 @@ export async function getOrdersByUserId(input: {
   userId: string;
   page: number;
   pageSize: number;
+  status?: OrderStatus;
 }) {
   const skip = (input.page - 1) * input.pageSize;
 
@@ -194,6 +195,7 @@ export async function getOrdersByUserId(input: {
     prisma.order.findMany({
       where: {
         userId: input.userId,
+        status: input.status,
       },
       orderBy: {
         createdAt: "desc",
@@ -207,6 +209,7 @@ export async function getOrdersByUserId(input: {
     prisma.order.count({
       where: {
         userId: input.userId,
+        status: input.status,
       },
     }),
   ]);

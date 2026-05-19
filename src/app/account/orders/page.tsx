@@ -1,16 +1,47 @@
+import { type OrderStatus } from "@prisma/client";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { getCurrentUser } from "@/lib/auth/current-user";
-import { getOrdersByUserId } from "@/lib/services/orders";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
 import { ORDER_STATUS_LABELS } from "@/lib/constants";
+import { getOrdersByUserId } from "@/lib/services/orders";
+import { cn, formatCurrency, formatDateTime } from "@/lib/utils";
+
+const ORDER_STATUS_VALUES = [
+  "PENDING",
+  "IN_PROGRESS",
+  "ON_THE_WAY",
+  "DELIVERED",
+] as const satisfies readonly OrderStatus[];
+
+const FILTER_OPTIONS = [
+  { value: "ALL", label: "All" },
+  ...Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => ({
+    value: value as OrderStatus,
+    label,
+  })),
+] as const;
+
+function resolveStatusFilter(
+  value: string | string[] | undefined,
+): OrderStatus | "ALL" {
+  const candidate = Array.isArray(value) ? value[0] : value;
+
+  if (!candidate || candidate === "all") {
+    return "ALL";
+  }
+
+  return ORDER_STATUS_VALUES.includes(candidate as OrderStatus)
+    ? (candidate as OrderStatus)
+    : "ALL";
+}
 
 export default async function AccountOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; status?: string | string[] }>;
 }) {
   const user = await getCurrentUser();
   if (!user) {
@@ -21,12 +52,26 @@ export default async function AccountOrdersPage({
     redirect("/admin");
   }
 
-  const { page } = await searchParams;
+  const { page, status } = await searchParams;
+  const statusFilter = resolveStatusFilter(status);
   const currentPage = Math.max(1, Number(page ?? "1"));
+
+  const buildOrdersHref = (nextPage: number, nextStatus: OrderStatus | "ALL") => {
+    const params = new URLSearchParams();
+    params.set("page", String(nextPage));
+
+    if (nextStatus !== "ALL") {
+      params.set("status", nextStatus);
+    }
+
+    return `/account/orders?${params.toString()}`;
+  };
+
   const { orders, totalPages } = await getOrdersByUserId({
     userId: user.id,
     page: currentPage,
     pageSize: 6,
+    status: statusFilter === "ALL" ? undefined : statusFilter,
   });
 
   return (
@@ -37,10 +82,35 @@ export default async function AccountOrdersPage({
         </h1>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {FILTER_OPTIONS.map((option) => {
+          const isActive = option.value === statusFilter;
+
+          return (
+            <Link
+              key={option.value}
+              href={buildOrdersHref(1, option.value)}
+              className={cn(
+                "inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold transition hover:-translate-y-0.5",
+                isActive
+                  ? "border-transparent bg-[var(--navy-950)] text-white"
+                  : "border-[var(--line-soft)] bg-white text-[var(--navy-950)] hover:border-[rgba(244,71,161,0.35)] hover:text-[var(--pink-500)]",
+              )}
+            >
+              {option.label}
+            </Link>
+          );
+        })}
+      </div>
+
       {orders.length === 0 ? (
         <EmptyState
-          title="No orders yet"
-          description="Add products to your cart and complete checkout to see your order history here."
+          title={statusFilter === "ALL" ? "No orders yet" : "No matching orders"}
+          description={
+            statusFilter === "ALL"
+              ? "Add products to your cart and complete checkout to see your order history here."
+              : "You do not have any orders in this status right now."
+          }
           ctaLabel="Browse products"
           ctaHref="/products"
         />
@@ -57,7 +127,7 @@ export default async function AccountOrdersPage({
                     {ORDER_STATUS_LABELS[order.status]}
                   </h2>
                   <p className="mt-2 text-sm text-[var(--ink-700)]">
-                    {formatDateTime(order.createdAt)} • {order.destinationLocation}
+                    {formatDateTime(order.createdAt)} | {order.destinationLocation}
                   </p>
                 </div>
                 <p className="text-xl font-semibold text-[var(--navy-950)]">
@@ -78,7 +148,7 @@ export default async function AccountOrdersPage({
 
       <div className="flex items-center justify-between">
         <ButtonLink
-          href={`/account/orders?page=${Math.max(1, currentPage - 1)}`}
+          href={buildOrdersHref(Math.max(1, currentPage - 1), statusFilter)}
           variant="secondary"
           className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
         >
@@ -88,7 +158,7 @@ export default async function AccountOrdersPage({
           Page {currentPage} of {totalPages}
         </p>
         <ButtonLink
-          href={`/account/orders?page=${Math.min(totalPages, currentPage + 1)}`}
+          href={buildOrdersHref(Math.min(totalPages, currentPage + 1), statusFilter)}
           variant="secondary"
           className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
         >
