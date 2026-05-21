@@ -135,31 +135,33 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="container-shell">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--danger-500)]">
-              Limited-time drops
-            </p>
-            <h2 className="mt-2 display-title text-3xl font-semibold text-[var(--navy-950)]">
-              Discounted right now
-            </h2>
+      {discountedProducts.length > 0 ? (
+        <section className="container-shell">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--danger-500)]">
+                Limited-time drops
+              </p>
+              <h2 className="mt-2 display-title text-3xl font-semibold text-[var(--navy-950)]">
+                Discounted right now
+              </h2>
+            </div>
+            <ButtonLink
+              href="/products"
+              variant="secondary"
+              className="hidden shadow-[0_14px_30px_rgba(18,26,56,0.08)] md:inline-flex"
+            >
+              View all
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </ButtonLink>
           </div>
-          <ButtonLink
-            href="/products"
-            variant="secondary"
-            className="hidden shadow-[0_14px_30px_rgba(18,26,56,0.08)] md:inline-flex"
-          >
-            View all
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </ButtonLink>
-        </div>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {discountedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {discountedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
