@@ -41,7 +41,14 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof ConflictError) {
-      return jsonError(error.message, 409);
+      return jsonResponse(
+        {
+          success: false,
+          message: error.message,
+          errors: error.fieldErrors,
+        },
+        { status: 409 },
+      );
     }
 
     if (error instanceof RateLimitError) {

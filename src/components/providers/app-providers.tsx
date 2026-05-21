@@ -12,7 +12,7 @@ export function AppProviders({
   return (
     <CartProvider>
       {children}
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-right" richColors closeButton />
     </CartProvider>
   );
 }

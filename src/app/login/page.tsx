@@ -13,9 +13,6 @@ export default async function LoginPage() {
         <h1 className="mt-3 display-title text-4xl font-semibold text-[var(--navy-950)]">
           Login to continue
         </h1>
-        <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
-          Use your email or username plus password. Sessions stay valid for 7 days.
-        </p>
         <div className="mt-8">
           <LoginForm />
         </div>
