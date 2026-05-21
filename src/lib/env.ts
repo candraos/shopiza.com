@@ -22,5 +22,4 @@ export const env = {
     resendApiKey: process.env.RESEND_API_KEY ?? "",
     fromEmail: process.env.FROM_EMAIL ?? "",
   },
-  smsMode: process.env.SMS_PROVIDER_MODE ?? "log",
 };

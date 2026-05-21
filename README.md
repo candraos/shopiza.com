@@ -87,7 +87,6 @@ SMTP_SECURE="false"
 SMTP_USER=""
 SMTP_PASSWORD=""
 SMTP_FROM="Shopiza <no-reply@shopiza.local>"
-SMS_PROVIDER_MODE="log"
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""
 NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=""
 ```
@@ -154,7 +153,6 @@ When a section is deleted:
 
 ### SMS
 
-- Current default mode is logging-only via `SMS_PROVIDER_MODE="log"`.
 - The SMS service is intentionally isolated in `src/lib/services/sms.ts` so a real provider can be integrated later.
 
 ## Google Maps Notes
