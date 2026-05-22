@@ -277,6 +277,26 @@ export async function getAdminOrders(input?: {
   };
 }
 
+export async function getAdminOrderById(orderId: string) {
+  return prisma.order.findUnique({
+    where: {
+      id: orderId,
+    },
+    include: {
+      items: true,
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          phoneNumber: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+}
+
 export async function getAdminUnseenOrderCount(since: Date) {
   return prisma.order.count({
     where: {
