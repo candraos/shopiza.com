@@ -33,6 +33,7 @@ const legacyProductUploadsDirectory = path.join(
   "products",
 );
 const runtimeProductUploadsDirectory = resolveProductUploadsDirectory();
+let uploadedProductImageStorageReady: Promise<void> | null = null;
 
 type ProductImageContentType =
   (typeof contentTypeByExtension)[keyof typeof contentTypeByExtension];
@@ -72,6 +73,73 @@ function getCandidateProductUploadDirectories() {
   return [runtimeProductUploadsDirectory, legacyProductUploadsDirectory];
 }
 
+function getDatabaseProvider() {
+  const configuredProvider = process.env.DATABASE_PROVIDER?.toLowerCase();
+
+  if (configuredProvider?.includes("postgres")) {
+    return "postgresql";
+  }
+
+  if (configuredProvider?.includes("sqlite")) {
+    return "sqlite";
+  }
+
+  const databaseUrl = process.env.DATABASE_URL ?? "";
+
+  if (
+    databaseUrl.startsWith("postgres://") ||
+    databaseUrl.startsWith("postgresql://")
+  ) {
+    return "postgresql";
+  }
+
+  return "sqlite";
+}
+
+async function ensureUploadedProductImageStorage() {
+  if (!uploadedProductImageStorageReady) {
+    uploadedProductImageStorageReady = (async () => {
+      if (getDatabaseProvider() === "postgresql") {
+        await prisma.$executeRawUnsafe(`
+          CREATE TABLE IF NOT EXISTS "UploadedProductImage" (
+            "id" TEXT PRIMARY KEY,
+            "uploadedByUserId" TEXT NOT NULL,
+            "imageUrl" TEXT NOT NULL,
+            "contentType" TEXT NOT NULL,
+            "data" BYTEA NOT NULL,
+            "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+      } else {
+        await prisma.$executeRawUnsafe(`
+          CREATE TABLE IF NOT EXISTS "UploadedProductImage" (
+            "id" TEXT PRIMARY KEY,
+            "uploadedByUserId" TEXT NOT NULL,
+            "imageUrl" TEXT NOT NULL,
+            "contentType" TEXT NOT NULL,
+            "data" BLOB NOT NULL,
+            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+      }
+
+      await prisma.$executeRawUnsafe(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "UploadedProductImage_imageUrl_key"
+        ON "UploadedProductImage" ("imageUrl")
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "UploadedProductImage_uploadedByUserId_createdAt_idx"
+        ON "UploadedProductImage" ("uploadedByUserId", "createdAt")
+      `);
+    })().catch((error) => {
+      uploadedProductImageStorageReady = null;
+      throw error;
+    });
+  }
+
+  await uploadedProductImageStorageReady;
+}
+
 function buildProductImageUrl(filename: string) {
   return `${productImageUrlPrefix}${filename}`;
 }
@@ -94,6 +162,8 @@ export async function readStoredProductImage(filename: string) {
   if (!contentType) {
     return null;
   }
+
+  await ensureUploadedProductImageStorage();
 
   const imageUrl = buildProductImageUrl(filename);
   const uploadedImages = await prisma.$queryRaw<Array<{ data: Uint8Array }>>`
@@ -142,6 +212,8 @@ export async function saveProductImage(file: File, uploadedByUserId: string) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const imageUrl = buildProductImageUrl(filename);
 
+  await ensureUploadedProductImageStorage();
+
   await prisma.$executeRaw`
     INSERT INTO "UploadedProductImage" (
       "id",
@@ -170,6 +242,8 @@ export async function deleteStoredProductImage(imageUrl: string) {
   if (!filename) {
     return;
   }
+
+  await ensureUploadedProductImageStorage();
 
   await prisma.$executeRaw`
     DELETE FROM "UploadedProductImage"
