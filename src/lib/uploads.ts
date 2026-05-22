@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { readFile, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -9,6 +9,7 @@ import {
   ALLOWED_PRODUCT_IMAGE_TYPES,
   MAX_PRODUCT_IMAGE_BYTES,
 } from "@/lib/constants";
+import { prisma } from "@/lib/prisma";
 
 const extensionByMimeType: Record<(typeof ALLOWED_PRODUCT_IMAGE_TYPES)[number], string> =
   {
@@ -24,6 +25,7 @@ const contentTypeByExtension = {
 } as const;
 const productImageFilenamePattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(?:jpe?g|png|webp)$/i;
+const productImageUrlPrefix = "/uploads/products/";
 const legacyProductUploadsDirectory = path.join(
   process.cwd(),
   "public",
@@ -70,14 +72,16 @@ function getCandidateProductUploadDirectories() {
   return [runtimeProductUploadsDirectory, legacyProductUploadsDirectory];
 }
 
-function getProductImageFilenameFromUrl(imageUrl: string) {
-  const prefix = "/uploads/products/";
+function buildProductImageUrl(filename: string) {
+  return `${productImageUrlPrefix}${filename}`;
+}
 
-  if (!imageUrl.startsWith(prefix)) {
+function getProductImageFilenameFromUrl(imageUrl: string) {
+  if (!imageUrl.startsWith(productImageUrlPrefix)) {
     return null;
   }
 
-  const filename = imageUrl.slice(prefix.length);
+  const filename = imageUrl.slice(productImageUrlPrefix.length);
   return productImageFilenamePattern.test(filename) ? filename : null;
 }
 
@@ -89,6 +93,24 @@ export async function readStoredProductImage(filename: string) {
   const contentType = getProductImageContentType(filename);
   if (!contentType) {
     return null;
+  }
+
+  const imageUrl = buildProductImageUrl(filename);
+  const uploadedImage = await prisma.uploadedProductImage.findUnique({
+    where: {
+      imageUrl,
+    },
+    select: {
+      contentType: true,
+      data: true,
+    },
+  });
+
+  if (uploadedImage) {
+    return {
+      buffer: Buffer.from(uploadedImage.data),
+      contentType,
+    };
   }
 
   for (const directory of getCandidateProductUploadDirectories()) {
@@ -107,7 +129,7 @@ export async function readStoredProductImage(filename: string) {
   return null;
 }
 
-export async function saveProductImage(file: File) {
+export async function saveProductImage(file: File, uploadedByUserId: string) {
   if (!ALLOWED_PRODUCT_IMAGE_TYPES.includes(file.type as never)) {
     throw new Error("Unsupported file type. Please upload JPG, PNG, or WebP.");
   }
@@ -116,17 +138,21 @@ export async function saveProductImage(file: File) {
     throw new Error("Image size exceeds the 4MB limit.");
   }
 
-  const directory = runtimeProductUploadsDirectory;
-  await mkdir(directory, { recursive: true });
-
   const extension = extensionByMimeType[file.type as keyof typeof extensionByMimeType];
   const filename = `${randomUUID()}${extension}`;
-  const filepath = path.join(directory, filename);
   const buffer = Buffer.from(await file.arrayBuffer());
+  const imageUrl = buildProductImageUrl(filename);
 
-  await writeFile(filepath, buffer);
+  await prisma.uploadedProductImage.create({
+    data: {
+      uploadedByUserId,
+      imageUrl,
+      contentType: file.type,
+      data: buffer,
+    },
+  });
 
-  return `/uploads/products/${filename}`;
+  return imageUrl;
 }
 
 export async function deleteStoredProductImage(imageUrl: string) {
@@ -135,6 +161,12 @@ export async function deleteStoredProductImage(imageUrl: string) {
   if (!filename) {
     return;
   }
+
+  await prisma.uploadedProductImage.deleteMany({
+    where: {
+      imageUrl,
+    },
+  });
 
   for (const directory of getCandidateProductUploadDirectories()) {
     try {

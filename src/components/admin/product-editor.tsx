@@ -290,13 +290,15 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
                 className="mt-3 text-sm font-semibold text-[var(--danger-500)]"
                 onClick={async () => {
                   if (!image.id) {
-                    const response = await fetch("/api/admin/uploads/product-image", {
-                      method: "DELETE",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        imageUrl: image.imageUrl,
-                      }),
+                    const searchParams = new URLSearchParams({
+                      imageUrl: image.imageUrl,
                     });
+                    const response = await fetch(
+                      `/api/admin/uploads/product-image?${searchParams.toString()}`,
+                      {
+                        method: "DELETE",
+                      },
+                    );
                     const data = (await response.json()) as { message?: string };
 
                     if (!response.ok) {

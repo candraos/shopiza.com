@@ -23,7 +23,9 @@ export async function POST(request: Request) {
       return jsonError("Upload at least one image.", 400);
     }
 
-    const imageUrls = await Promise.all(uploaded.map((file) => saveProductImage(file)));
+    const imageUrls = await Promise.all(
+      uploaded.map((file) => saveProductImage(file, user.id)),
+    );
 
     return jsonResponse({
       success: true,
@@ -51,13 +53,19 @@ export async function DELETE(request: Request) {
       return jsonError("Admin access required.", 403);
     }
 
-    const payload = (await request.json()) as { imageUrl?: string };
+    const requestUrl = new URL(request.url);
+    const imageUrl = requestUrl.searchParams.get("imageUrl");
+    const payload =
+      imageUrl || !request.headers.get("content-type")?.includes("application/json")
+        ? null
+        : ((await request.json()) as { imageUrl?: string });
+    const targetImageUrl = imageUrl ?? payload?.imageUrl;
 
-    if (!payload.imageUrl) {
+    if (!targetImageUrl) {
       return jsonError("Image URL is required.", 400);
     }
 
-    await deleteStoredProductImage(payload.imageUrl);
+    await deleteStoredProductImage(targetImageUrl);
 
     return jsonResponse({ success: true });
   } catch (error) {
