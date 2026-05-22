@@ -10,6 +10,7 @@ import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 
 type ProductImageItem = {
   id?: string;
+  uploadedImageId?: string;
   imageUrl: string;
   altText?: string | null;
   isMain: boolean;
@@ -39,6 +40,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [images, setImages] = useState<ProductImageItem[]>(
     product?.images.map((image, index) => ({
+      id: image.id,
       imageUrl: image.imageUrl,
       altText: image.altText ?? "",
       isMain: image.isMain,
@@ -69,25 +71,29 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
       });
       const uploadData = (await uploadResponse.json()) as {
         message?: string;
-        imageUrls?: string[];
+        images?: Array<{
+          id: string;
+          imageUrl: string;
+        }>;
       };
 
-      if (!uploadResponse.ok || !uploadData.imageUrls) {
+      if (!uploadResponse.ok || !uploadData.images) {
         toast.error(uploadData.message ?? "Image upload failed.");
         return;
       }
 
-      const { imageUrls } = uploadData;
+      const { images: uploadedImages } = uploadData;
       setImages((current) => [
         ...current,
-        ...imageUrls.map((imageUrl, index) => ({
-          imageUrl,
+        ...uploadedImages.map((image, index) => ({
+          uploadedImageId: image.id,
+          imageUrl: image.imageUrl,
           altText: "",
           isMain: false,
           sortOrder: current.length + index,
         })),
       ]);
-      toast.success("Images uploaded. Choose a main image before saving.");
+      toast.success("Images saved. Choose a main image before saving.");
     } finally {
       setIsUploadingImages(false);
     }
@@ -118,6 +124,7 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
           sectionId,
           archived: sectionId === "",
           images: nextImages.map((image, index) => ({
+            uploadedImageId: image.uploadedImageId,
             imageUrl: image.imageUrl,
             altText: image.altText ?? "",
             isMain: image.isMain,
@@ -255,7 +262,10 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
 
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {images.map((image, index) => (
-            <article key={`${image.imageUrl}-${index}`} className="rounded-[24px] border border-[var(--line-soft)] p-3">
+            <article
+              key={image.uploadedImageId ?? image.id ?? `${image.imageUrl}-${index}`}
+              className="rounded-[24px] border border-[var(--line-soft)] p-3"
+            >
               <div className="relative aspect-square overflow-hidden rounded-[18px] bg-[rgba(19,24,47,0.04)]">
                 <Image
                   src={image.imageUrl}
@@ -284,11 +294,28 @@ export function ProductEditor({ product, sections }: ProductEditorProps) {
               <button
                 type="button"
                 className="mt-3 text-sm font-semibold text-[var(--danger-500)]"
-                onClick={() =>
+                onClick={async () => {
+                  if (image.uploadedImageId) {
+                    const response = await fetch("/api/admin/uploads/product-image", {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        id: image.uploadedImageId,
+                        imageUrl: image.imageUrl,
+                      }),
+                    });
+                    const data = (await response.json()) as { message?: string };
+
+                    if (!response.ok) {
+                      toast.error(data.message ?? "Could not remove the image.");
+                      return;
+                    }
+                  }
+
                   setImages((current) =>
                     current.filter((_, entryIndex) => entryIndex !== index),
-                  )
-                }
+                  );
+                }}
               >
                 Remove image
               </button>

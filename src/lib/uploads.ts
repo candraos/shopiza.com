@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -70,6 +70,17 @@ function getCandidateProductUploadDirectories() {
   return [runtimeProductUploadsDirectory, legacyProductUploadsDirectory];
 }
 
+function getProductImageFilenameFromUrl(imageUrl: string) {
+  const prefix = "/uploads/products/";
+
+  if (!imageUrl.startsWith(prefix)) {
+    return null;
+  }
+
+  const filename = imageUrl.slice(prefix.length);
+  return productImageFilenamePattern.test(filename) ? filename : null;
+}
+
 export async function readStoredProductImage(filename: string) {
   if (!productImageFilenamePattern.test(filename)) {
     return null;
@@ -116,4 +127,25 @@ export async function saveProductImage(file: File) {
   await writeFile(filepath, buffer);
 
   return `/uploads/products/${filename}`;
+}
+
+export async function deleteStoredProductImage(imageUrl: string) {
+  const filename = getProductImageFilenameFromUrl(imageUrl);
+
+  if (!filename) {
+    return;
+  }
+
+  for (const directory of getCandidateProductUploadDirectories()) {
+    try {
+      await unlink(path.join(directory, filename));
+      return;
+    } catch (error) {
+      if (isMissingFileError(error)) {
+        continue;
+      }
+
+      throw error;
+    }
+  }
 }

@@ -27,6 +27,7 @@ export async function PUT(
     const { id } = await params;
     const product = await upsertProduct({
       id,
+      uploadedByUserId: user.id,
       name: payload.data.name,
       description: payload.data.description,
       priceCents: payload.data.priceCents,

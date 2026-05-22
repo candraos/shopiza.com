@@ -73,6 +73,7 @@ model User {
   orders                Order[]
   cartReservations      CartReservation[]
   securityEvents        SecurityEvent[]
+  uploadedProductImages UploadedProductImage[]
 
   @@index([role])
   @@index([createdAt])
@@ -201,6 +202,16 @@ model ProductImage {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+}
+
+model UploadedProductImage {
+  id               String   @id @default(uuid())
+  uploadedByUserId String
+  imageUrl         String
+  createdAt        DateTime @default(now())
+  uploadedBy       User     @relation(fields: [uploadedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([uploadedByUserId, createdAt])
 }
 
 model Discount {

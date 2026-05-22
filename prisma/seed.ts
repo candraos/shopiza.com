@@ -105,6 +105,7 @@ async function main() {
   await prisma.cartReservationItem.deleteMany();
   await prisma.cartReservation.deleteMany();
   await prisma.discount.deleteMany();
+  await prisma.uploadedProductImage.deleteMany();
   await prisma.productImage.deleteMany();
   await prisma.product.deleteMany();
   await prisma.section.deleteMany();

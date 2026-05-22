@@ -7,6 +7,14 @@ import {
 } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 
+type ProductImageInput = {
+  uploadedImageId?: string;
+  imageUrl: string;
+  altText?: string;
+  isMain: boolean;
+  sortOrder: number;
+};
+
 async function resolveProductSlug(name: string, productId?: string) {
   const baseSlug = slugify(name);
   const existingProducts = await prisma.product.findMany({
@@ -87,60 +95,140 @@ export async function deleteSection(id: string) {
 
 export async function upsertProduct(input: {
   id?: string;
+  uploadedByUserId: string;
   name: string;
   description: string;
   priceCents: number;
   stock: number;
   archived: boolean;
   sectionId?: string | null;
-  images: Array<{
-    imageUrl: string;
-    altText?: string;
-    isMain: boolean;
-    sortOrder: number;
-  }>;
+  images: ProductImageInput[];
 }) {
   const slug = await resolveProductSlug(input.name, input.id);
+  const uploadedImageIds = Array.from(
+    new Set(
+      input.images
+        .map((image) => image.uploadedImageId)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
 
-  if (input.id) {
-    return prisma.product.update({
+  if (uploadedImageIds.length > 0) {
+    const uploadedImages = await prisma.uploadedProductImage.findMany({
       where: {
-        id: input.id,
-      },
-      data: {
-        name: input.name,
-        slug,
-        description: input.description,
-        priceCents: input.priceCents,
-        stock: input.stock,
-        archived: input.archived || !input.sectionId,
-        sectionId: input.sectionId ?? null,
-        images: {
-          deleteMany: {},
-          create: input.images,
+        id: {
+          in: uploadedImageIds,
         },
-      },
-      include: {
-        images: true,
+        uploadedByUserId: input.uploadedByUserId,
       },
     });
+    const uploadedImagesById = new Map(
+      uploadedImages.map((image) => [image.id, image.imageUrl]),
+    );
+
+    if (uploadedImagesById.size !== uploadedImageIds.length) {
+      throw new Error(
+        "One or more uploaded images are no longer available. Upload them again.",
+      );
+    }
+
+    for (const image of input.images) {
+      if (!image.uploadedImageId) {
+        continue;
+      }
+
+      if (uploadedImagesById.get(image.uploadedImageId) !== image.imageUrl) {
+        throw new Error("Uploaded image data is invalid. Upload the image again.");
+      }
+    }
   }
 
-  return prisma.product.create({
-    data: {
-      name: input.name,
-      slug,
-      description: input.description,
-      priceCents: input.priceCents,
-      stock: input.stock,
-      archived: input.archived || !input.sectionId,
-      sectionId: input.sectionId ?? null,
-      images: {
-        create: input.images,
-      },
-    },
-    include: {
-      images: true,
+  return prisma.$transaction(async (transaction) => {
+    const images = input.images.map((image) => ({
+      imageUrl: image.imageUrl,
+      altText: image.altText,
+      isMain: image.isMain,
+      sortOrder: image.sortOrder,
+    }));
+
+    const product = input.id
+      ? await transaction.product.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            name: input.name,
+            slug,
+            description: input.description,
+            priceCents: input.priceCents,
+            stock: input.stock,
+            archived: input.archived || !input.sectionId,
+            sectionId: input.sectionId ?? null,
+            images: {
+              deleteMany: {},
+              create: images,
+            },
+          },
+          include: {
+            images: true,
+          },
+        })
+      : await transaction.product.create({
+          data: {
+            name: input.name,
+            slug,
+            description: input.description,
+            priceCents: input.priceCents,
+            stock: input.stock,
+            archived: input.archived || !input.sectionId,
+            sectionId: input.sectionId ?? null,
+            images: {
+              create: images,
+            },
+          },
+          include: {
+            images: true,
+          },
+        });
+
+    if (uploadedImageIds.length > 0) {
+      await transaction.uploadedProductImage.deleteMany({
+        where: {
+          id: {
+            in: uploadedImageIds,
+          },
+        },
+      });
+    }
+
+    return product;
+  });
+}
+
+export async function createUploadedProductImages(input: {
+  uploadedByUserId: string;
+  imageUrls: string[];
+}) {
+  return prisma.$transaction(
+    input.imageUrls.map((imageUrl) =>
+      prisma.uploadedProductImage.create({
+        data: {
+          uploadedByUserId: input.uploadedByUserId,
+          imageUrl,
+        },
+      }),
+    ),
+  );
+}
+
+export async function deleteUploadedProductImage(input: {
+  id: string;
+  uploadedByUserId: string;
+}) {
+  return prisma.uploadedProductImage.deleteMany({
+    where: {
+      id: input.id,
+      uploadedByUserId: input.uploadedByUserId,
     },
   });
 }
