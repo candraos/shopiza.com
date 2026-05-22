@@ -66,70 +66,66 @@ export function MobileHeaderMenu({
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
-      {isOpen ? (
-        <>
+      <div
+        aria-hidden={!isOpen}
+        className={cn(
+          "fixed inset-0 z-50 flex min-h-screen flex-col bg-white px-5 pb-8 pt-6 transition-transform duration-300 ease-out",
+          isOpen ? "translate-x-0" : "pointer-events-none translate-x-full",
+        )}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <ShopizajLogo href={homeHref} />
           <button
             type="button"
-            aria-label="Close menu overlay"
+            aria-label="Close menu"
             onClick={() => setOpenPathname(null)}
-            className="fixed inset-0 z-40 bg-[rgba(18,26,56,0.16)] backdrop-blur-sm"
-          />
-          <div className="fixed inset-x-4 top-20 z-50 glass-card rounded-[28px] p-5 shadow-[0_18px_45px_rgba(18,26,56,0.16)]">
-            <div className="flex items-start justify-between gap-4">
-              <ShopizajLogo href={homeHref} />
-              <button
-                type="button"
-                aria-label="Close menu"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--line-soft)] bg-white text-[var(--navy-950)]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {user ? (
+          <p className="mt-6 text-sm font-semibold text-[var(--navy-950)]">
+            {user.username}
+          </p>
+        ) : null}
+
+        <nav className="mt-8 grid gap-2">
+          {items.map((item) => {
+            const isActive = isActivePath(pathname, item.href, item.exact);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
                 onClick={() => setOpenPathname(null)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--line-soft)] bg-white text-[var(--navy-950)]"
+                className={cn(
+                  "rounded-2xl px-4 py-3 text-sm font-semibold transition",
+                  isActive
+                    ? "bg-[rgba(244,71,161,0.08)] text-[var(--pink-500)]"
+                    : "text-[var(--ink-700)] hover:bg-[rgba(244,71,161,0.08)] hover:text-[var(--pink-500)]",
+                )}
               >
-                <X className="h-4 w-4" />
-              </button>
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto pt-8">
+          {user ? (
+            <LogoutButton />
+          ) : (
+            <div className="grid gap-3">
+              <ButtonLink href="/login" variant="secondary">
+                Login
+              </ButtonLink>
+              <ButtonLink href="/register">Create account</ButtonLink>
             </div>
-
-            {user ? (
-              <p className="mt-4 text-sm font-semibold text-[var(--navy-950)]">
-                {user.username}
-              </p>
-            ) : null}
-
-            <nav className="mt-5 grid gap-2">
-              {items.map((item) => {
-                const isActive = isActivePath(pathname, item.href, item.exact);
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpenPathname(null)}
-                    className={cn(
-                      "rounded-2xl px-4 py-3 text-sm font-semibold transition",
-                      isActive
-                        ? "bg-[rgba(244,71,161,0.08)] text-[var(--pink-500)]"
-                        : "text-[var(--ink-700)] hover:bg-[rgba(244,71,161,0.08)] hover:text-[var(--pink-500)]",
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="mt-5">
-              {user ? (
-                <LogoutButton />
-              ) : (
-                <div className="grid gap-3">
-                  <ButtonLink href="/login" variant="secondary">
-                    Login
-                  </ButtonLink>
-                  <ButtonLink href="/register">Create account</ButtonLink>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      ) : null}
+          )}
+        </div>
+      </div>
     </div>
   );
 }
