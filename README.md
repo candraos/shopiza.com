@@ -28,7 +28,7 @@ It includes:
 - All primary application IDs are UUIDs.
 - The seeded admin account is intended for development/bootstrap only.
 - Product images in seed data are generated through an internal media route.
-- Uploaded admin product images keep the `/uploads/products/...` URL shape, but are served through a route handler. Local development stores them in `public/uploads/products`; production can point `PRODUCT_UPLOADS_DIR` at any writable directory.
+- Uploaded admin product images keep the `/uploads/products/...` URL shape and are served through a route handler. New uploads are persisted in the database for both local and production use, while legacy filesystem directories remain as a fallback read path.
 - The workspace did not contain an actual Shopizaj logo asset file, so the app uses a branded text/mark lockup matched to the requested dark navy, magenta, and purple palette.
 
 ## Local Setup
@@ -90,7 +90,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=""
 NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=""
 ```
 
-`PRODUCT_UPLOADS_DIR` is optional. If omitted, local development writes to `public/uploads/products`. In production, the app falls back to the OS temp directory, which is writable but usually not durable on serverless hosts, so a mounted volume or object storage remains the right long-term production setup.
+`PRODUCT_UPLOADS_DIR` is optional. It is now only used as a legacy filesystem fallback path for reads/deletes of older uploads. New uploads are persisted in the database, which avoids production breakage on ephemeral filesystems.
 
 ## Database Commands
 

@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgres"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -207,7 +207,9 @@ model ProductImage {
 model UploadedProductImage {
   id               String   @id @default(uuid())
   uploadedByUserId String
-  imageUrl         String
+  imageUrl         String   @unique
+  contentType      String
+  data             Bytes
   createdAt        DateTime @default(now())
   uploadedBy       User     @relation(fields: [uploadedByUserId], references: [id], onDelete: Cascade)
 

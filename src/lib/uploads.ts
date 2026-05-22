@@ -96,15 +96,13 @@ export async function readStoredProductImage(filename: string) {
   }
 
   const imageUrl = buildProductImageUrl(filename);
-  const uploadedImage = await prisma.uploadedProductImage.findFirst({
-    where: {
-      imageUrl,
-    },
-    select: {
-      contentType: true,
-      data: true,
-    },
-  });
+  const uploadedImages = await prisma.$queryRaw<Array<{ data: Uint8Array }>>`
+    SELECT "data"
+    FROM "UploadedProductImage"
+    WHERE "imageUrl" = ${imageUrl}
+    LIMIT 1
+  `;
+  const uploadedImage = uploadedImages[0];
 
   if (uploadedImage) {
     return {
@@ -140,17 +138,28 @@ export async function saveProductImage(file: File, uploadedByUserId: string) {
 
   const extension = extensionByMimeType[file.type as keyof typeof extensionByMimeType];
   const filename = `${randomUUID()}${extension}`;
+  const id = randomUUID();
   const buffer = Buffer.from(await file.arrayBuffer());
   const imageUrl = buildProductImageUrl(filename);
 
-  await prisma.uploadedProductImage.create({
-    data: {
-      uploadedByUserId,
-      imageUrl,
-      contentType: file.type,
-      data: buffer,
-    },
-  });
+  await prisma.$executeRaw`
+    INSERT INTO "UploadedProductImage" (
+      "id",
+      "uploadedByUserId",
+      "imageUrl",
+      "contentType",
+      "data",
+      "createdAt"
+    )
+    VALUES (
+      ${id},
+      ${uploadedByUserId},
+      ${imageUrl},
+      ${file.type},
+      ${buffer},
+      ${new Date()}
+    )
+  `;
 
   return imageUrl;
 }
@@ -162,11 +171,10 @@ export async function deleteStoredProductImage(imageUrl: string) {
     return;
   }
 
-  await prisma.uploadedProductImage.deleteMany({
-    where: {
-      imageUrl,
-    },
-  });
+  await prisma.$executeRaw`
+    DELETE FROM "UploadedProductImage"
+    WHERE "imageUrl" = ${imageUrl}
+  `;
 
   for (const directory of getCandidateProductUploadDirectories()) {
     try {
