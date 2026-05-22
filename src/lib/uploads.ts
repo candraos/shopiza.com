@@ -96,7 +96,7 @@ export async function readStoredProductImage(filename: string) {
   }
 
   const imageUrl = buildProductImageUrl(filename);
-  const uploadedImage = await prisma.uploadedProductImage.findUnique({
+  const uploadedImage = await prisma.uploadedProductImage.findFirst({
     where: {
       imageUrl,
     },
