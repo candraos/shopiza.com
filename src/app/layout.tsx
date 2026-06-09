@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 import {
   APP_NAME,
-  FACEBOOK_HANDLE,
-  INSTAGRAM_HANDLE,
+  FACEBOOK_URL,
+  INSTAGRAM_URL,
   SUPPORT_ADDRESS,
   SUPPORT_EMAIL,
   SUPPORT_PHONE_NUMBER,
@@ -69,8 +69,8 @@ export default async function RootLayout({
                 supportAddress={SUPPORT_ADDRESS}
                 supportEmail={SUPPORT_EMAIL}
                 supportPhoneNumber={SUPPORT_PHONE_NUMBER}
-                facebookHandle={FACEBOOK_HANDLE}
-                instagramHandle={INSTAGRAM_HANDLE}
+                facebookUrl={FACEBOOK_URL}
+                instagramUrl={INSTAGRAM_URL}
               />
             )}
             {isAdmin ? null : <WhatsAppFloat />}

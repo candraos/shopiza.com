@@ -6,26 +6,18 @@ function getWhatsAppUrl(phoneNumber: string) {
   return `https://wa.me/${phoneNumber.replace(/[^\d]/g, "")}`;
 }
 
-function getInstagramUrl(handle: string) {
-  return `https://instagram.com/${handle.replace(/\s+/g, "")}`;
-}
-
-function getFacebookUrl(handle: string) {
-  return `https://facebook.com/${handle.replace(/\s+/g, "")}`;
-}
-
 export function SiteFooter({
   supportAddress,
   supportEmail,
   supportPhoneNumber,
-  facebookHandle,
-  instagramHandle,
+  facebookUrl,
+  instagramUrl,
 }: {
   supportAddress: string;
   supportEmail: string;
   supportPhoneNumber: string;
-  facebookHandle: string;
-  instagramHandle: string;
+  facebookUrl: string;
+  instagramUrl: string;
 }) {
   return (
     <footer className="mt-16 border-t border-[rgba(19,24,47,0.08)] bg-white/70">
@@ -57,11 +49,11 @@ export function SiteFooter({
               {supportPhoneNumber} on WhatsApp
             </a>
             <p>{supportAddress}</p>
-            <a href={getFacebookUrl(facebookHandle)} target="_blank" rel="noreferrer">
-              Facebook: {facebookHandle}
+            <a href={facebookUrl} target="_blank" rel="noreferrer">
+              Facebook
             </a>
-            <a href={getInstagramUrl(instagramHandle)} target="_blank" rel="noreferrer">
-              Instagram: {instagramHandle}
+            <a href={instagramUrl} target="_blank" rel="noreferrer">
+              Instagram
             </a>
           </div>
         </div>
