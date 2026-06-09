@@ -1,6 +1,14 @@
 export const APP_NAME = "Shopizaj";
 export const SUPPORT_EMAIL =
-  process.env.SHOPIZAJ_SUPPORT_EMAIL ?? "charbel.g.andraos@gmail.com";
+  process.env.SHOPIZAJ_SUPPORT_EMAIL ?? "info@shopizaj.com";
+export const SUPPORT_PHONE_NUMBER =
+  process.env.SHOPIZAJ_SUPPORT_PHONE ?? "+96176329902";
+export const SUPPORT_ADDRESS =
+  process.env.SHOPIZAJ_SUPPORT_ADDRESS ?? "Achrafieh Alferd Naccache Road";
+export const INSTAGRAM_HANDLE =
+  process.env.SHOPIZAJ_INSTAGRAM_HANDLE ?? "shopizajlb";
+export const FACEBOOK_HANDLE =
+  process.env.SHOPIZAJ_FACEBOOK_HANDLE ?? "Shopizaj lb";
 export const AUTH_COOKIE_NAME = "shopizaj_session";
 export const VERIFICATION_CODE_TTL_MINUTES = 15;
 export const PENDING_REGISTRATION_TTL_MINUTES = 24 * 60;

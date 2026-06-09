@@ -1,3 +1,9 @@
+'use client';
+
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDateTime } from "@/lib/utils";
 
@@ -11,6 +17,8 @@ type ClientItem = {
 };
 
 export function ClientsManager({ clients }: { clients: ClientItem[] }) {
+  const router = useRouter();
+
   if (clients.length === 0) {
     return (
       <EmptyState
@@ -38,6 +46,34 @@ export function ClientsManager({ clients }: { clients: ClientItem[] }) {
             <p className="text-sm font-medium text-[var(--ink-500)]">
               Registered {formatDateTime(client.createdAt)}
             </p>
+            <Button
+              type="button"
+              variant="danger"
+              onClick={async () => {
+                const confirmed = window.confirm(
+                  `Delete ${client.fullName}'s account permanently?`,
+                );
+
+                if (!confirmed) {
+                  return;
+                }
+
+                const response = await fetch(`/api/admin/clients/${client.id}`, {
+                  method: "DELETE",
+                });
+                const data = (await response.json()) as { message?: string };
+
+                if (!response.ok) {
+                  toast.error(data.message ?? "Could not delete the client account.");
+                  return;
+                }
+
+                toast.success("Client account deleted.");
+                router.refresh();
+              }}
+            >
+              Delete account
+            </Button>
           </div>
         </article>
       ))}

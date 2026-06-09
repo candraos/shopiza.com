@@ -52,6 +52,8 @@ export function LoginForm() {
         <TextField
           label="Email or username"
           name="identifier"
+          autoCapitalize="none"
+          autoCorrect="off"
         />
         {errors.identifier ? (
           <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.identifier[0]}</p>
@@ -67,7 +69,7 @@ export function LoginForm() {
           <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.password[0]}</p>
         ) : null}
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="w-full sm:w-auto">
         {pending ? "Signing in..." : "Login"}
       </Button>
       <div className="flex flex-wrap gap-3 text-sm">

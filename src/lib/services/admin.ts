@@ -450,3 +450,32 @@ export async function getAdminClients(input?: {
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
 }
+
+export async function deleteClientAccountById(id: string) {
+  const client = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      role: true,
+    },
+  });
+
+  if (!client) {
+    throw new Error("Client account not found.");
+  }
+
+  if (client.role !== "CLIENT") {
+    throw new Error("Only client accounts can be deleted from this screen.");
+  }
+
+  return prisma.$transaction(async (transaction) => {
+    await transaction.order.updateMany({
+      where: { userId: id },
+      data: { userId: { set: null } },
+    });
+
+    await transaction.user.delete({
+      where: { id },
+    });
+  });
+}

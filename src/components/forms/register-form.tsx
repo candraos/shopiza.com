@@ -58,25 +58,38 @@ export function RegisterForm() {
     >
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <TextField label="Full name" name="fullName" />
+          <TextField label="Full name" name="fullName" autoComplete="name" />
           {errors.fullName ? (
             <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.fullName[0]}</p>
           ) : null}
         </div>
         <div>
-          <TextField label="Username" name="username" />
+          <TextField label="Username" name="username" autoCapitalize="none" autoCorrect="off" />
           {errors.username ? (
             <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.username[0]}</p>
           ) : null}
         </div>
         <div>
-          <TextField label="Email" name="email" type="email" />
+          <TextField
+            label="Email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            inputMode="email"
+          />
           {errors.email ? (
             <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.email[0]}</p>
           ) : null}
         </div>
         <div>
-          <TextField label="Phone number" name="phoneNumber" />
+          <TextField
+            label="Phone number"
+            name="phoneNumber"
+            autoComplete="tel"
+            inputMode="tel"
+            placeholder="+96176329902"
+          />
           {errors.phoneNumber ? (
             <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.phoneNumber[0]}</p>
           ) : null}
@@ -103,7 +116,7 @@ export function RegisterForm() {
         </div>
       </div>
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="w-full sm:w-auto">
         {pending ? "Starting email verification..." : "Create account"}
       </Button>
     </form>

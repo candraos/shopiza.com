@@ -625,3 +625,38 @@ export async function resetPasswordWithCode(input: {
     message: "Password reset completed via EMAIL.",
   });
 }
+
+export async function deleteUserAccountById(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      role: true,
+      email: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  if (user.role !== "CLIENT") {
+    throw new Error("Admin accounts cannot be deleted from this flow.");
+  }
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.order.updateMany({
+      where: { userId },
+      data: { userId: { set: null } },
+    });
+
+    await transaction.user.delete({
+      where: { id: userId },
+    });
+  });
+
+  await logSecurityEvent({
+    eventType: "account.deleted",
+    message: `Client account deleted: ${user.email}`,
+  });
+}

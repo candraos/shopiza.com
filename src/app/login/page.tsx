@@ -6,7 +6,7 @@ export default async function LoginPage() {
 
   return (
     <div className="container-shell py-12">
-      <div className="mx-auto max-w-xl glass-card rounded-[40px] p-8 md:p-10">
+      <div className="mx-auto max-w-xl glass-card rounded-[32px] p-5 sm:p-6 md:rounded-[40px] md:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[var(--pink-500)]">
           Welcome back
         </p>

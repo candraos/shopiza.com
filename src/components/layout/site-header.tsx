@@ -81,6 +81,11 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
               Shop
             </NavLink>
             {user ? (
+              <NavLink href="/account" exact>
+                My profile
+              </NavLink>
+            ) : null}
+            {user ? (
               <NavLink href="/account/orders">
                 My orders
               </NavLink>
@@ -92,7 +97,15 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
           <CartIconLink />
           <MobileHeaderMenu
             homeHref="/"
-            items={user ? [...clientNavItems, { href: "/account/orders", label: "My orders" }] : [...clientNavItems]}
+            items={
+              user
+                ? [
+                    ...clientNavItems,
+                    { href: "/account", label: "My profile", exact: true },
+                    { href: "/account/orders", label: "My orders" },
+                  ]
+                : [...clientNavItems]
+            }
             user={user ? { username: user.username } : null}
           />
           {user ? (

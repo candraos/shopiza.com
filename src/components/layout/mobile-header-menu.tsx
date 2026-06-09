@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { ShopizajLogo } from "@/components/brand/shopizaj-logo";
 import { LogoutButton } from "@/components/layout/logout-button";
@@ -36,6 +36,7 @@ export function MobileHeaderMenu({
   user,
 }: MobileHeaderMenuProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -137,10 +138,27 @@ export function MobileHeaderMenu({
                 <LogoutButton />
               ) : (
                 <div className="grid gap-3">
-                  <ButtonLink href="/login" variant="secondary">
+                  <ButtonLink
+                    href="/login"
+                    variant="secondary"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setIsOpen(false);
+                      router.push("/login");
+                    }}
+                  >
                     Login
                   </ButtonLink>
-                  <ButtonLink href="/register">Create account</ButtonLink>
+                  <ButtonLink
+                    href="/register"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setIsOpen(false);
+                      router.push("/register");
+                    }}
+                  >
+                    Create account
+                  </ButtonLink>
                 </div>
               )}
             </div>

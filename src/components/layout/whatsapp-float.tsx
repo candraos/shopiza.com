@@ -1,4 +1,4 @@
-const WHATSAPP_PHONE_NUMBER = "+96103118776";
+import { SUPPORT_PHONE_NUMBER } from "@/lib/constants";
 
 function getWhatsAppUrl(phoneNumber: string) {
   const cleaned = phoneNumber.replace(/[^\d]/g, "");
@@ -8,11 +8,11 @@ function getWhatsAppUrl(phoneNumber: string) {
 export function WhatsAppFloat() {
   return (
     <a
-      href={getWhatsAppUrl(WHATSAPP_PHONE_NUMBER)}
+      href={getWhatsAppUrl(SUPPORT_PHONE_NUMBER)}
       target="_blank"
       rel="noreferrer"
       aria-label="Chat on WhatsApp"
-      className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-3 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(37,211,102,0.32)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#20ba59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 sm:bottom-6 sm:right-6"
+      className="fixed bottom-24 right-4 z-[60] inline-flex items-center gap-3 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(37,211,102,0.32)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-[#20ba59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))] sm:right-6"
     >
       <span
         aria-hidden="true"

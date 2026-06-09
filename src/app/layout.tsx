@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 
-import { APP_NAME, SUPPORT_EMAIL } from "@/lib/constants";
+import {
+  APP_NAME,
+  FACEBOOK_HANDLE,
+  INSTAGRAM_HANDLE,
+  SUPPORT_ADDRESS,
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_NUMBER,
+} from "@/lib/constants";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { AppProviders } from "@/components/providers/app-providers";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -57,7 +64,15 @@ export default async function RootLayout({
           <div className="relative flex min-h-screen flex-col">
             <SiteHeader user={user} />
             <main className="flex-1">{children}</main>
-            {isAdmin ? null : <SiteFooter supportEmail={SUPPORT_EMAIL} />}
+            {isAdmin ? null : (
+              <SiteFooter
+                supportAddress={SUPPORT_ADDRESS}
+                supportEmail={SUPPORT_EMAIL}
+                supportPhoneNumber={SUPPORT_PHONE_NUMBER}
+                facebookHandle={FACEBOOK_HANDLE}
+                instagramHandle={INSTAGRAM_HANDLE}
+              />
+            )}
             {isAdmin ? null : <WhatsAppFloat />}
           </div>
         </AppProviders>
