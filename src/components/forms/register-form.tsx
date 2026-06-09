@@ -88,7 +88,6 @@ export function RegisterForm() {
             name="phoneNumber"
             autoComplete="tel"
             inputMode="tel"
-            placeholder="+96176329902"
           />
           {errors.phoneNumber ? (
             <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.phoneNumber[0]}</p>

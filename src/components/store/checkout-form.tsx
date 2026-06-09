@@ -5,9 +5,31 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { useCart } from "@/components/store/cart-provider";
-import { LocationPicker, requestCurrentLocationValue } from "@/components/store/location-picker";
 import { Button } from "@/components/ui/button";
+import { TextAreaField, TextField } from "@/components/ui/field";
 import { formatCurrency } from "@/lib/utils";
+
+function buildDestinationLocation(input: {
+  buildingNumber: string;
+  streetAddress: string;
+  area: string;
+  city: string;
+  deliveryNotes: string;
+}) {
+  const parts = [
+    input.buildingNumber.trim()
+      ? `Building ${input.buildingNumber.trim()}`
+      : "",
+    input.streetAddress.trim(),
+    input.city.trim(),
+    input.area.trim(),
+  ].filter(Boolean);
+
+  const addressLine = parts.join(", ");
+  const notes = input.deliveryNotes.trim();
+
+  return notes ? `${addressLine}, Notes: ${notes}` : addressLine;
+}
 
 export function CheckoutForm({
   userName,
@@ -16,11 +38,12 @@ export function CheckoutForm({
 }) {
   const router = useRouter();
   const { cart, sessionId, clearCart } = useCart();
-  const [location, setLocation] = useState({
-    label: "",
-    latitude: null as number | null,
-    longitude: null as number | null,
-    placeId: null as string | null,
+  const [address, setAddress] = useState({
+    buildingNumber: "",
+    streetAddress: "",
+    area: "",
+    city: "",
+    deliveryNotes: "",
   });
   const [pending, setPending] = useState(false);
 
@@ -34,12 +57,70 @@ export function CheckoutForm({
           Checkout for {userName}
         </h1>
         <p className="mt-3 text-sm leading-7 text-[var(--ink-700)]">
-          Cash on delivery only. If no delivery point is selected yet, we request
-          your current location before submitting the order. You can also use the
-          button below to grant location access and load it in advance.
+          Cash on delivery only. Enter the delivery address exactly as you want
+          it to appear on the order and in the confirmation email.
         </p>
-        <div className="mt-8">
-          <LocationPicker value={location} onChange={setLocation} />
+        <div className="mt-8 grid gap-4">
+          <TextField
+            label="Building number"
+            name="buildingNumber"
+            value={address.buildingNumber}
+            onChange={(event) =>
+              setAddress((current) => ({
+                ...current,
+                buildingNumber: event.target.value,
+              }))
+            }
+          />
+          <TextField
+            label="Street address"
+            name="streetAddress"
+            autoComplete="street-address"
+            value={address.streetAddress}
+            onChange={(event) =>
+              setAddress((current) => ({
+                ...current,
+                streetAddress: event.target.value,
+              }))
+            }
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="Area"
+              name="area"
+              autoComplete="address-level3"
+              value={address.area}
+              onChange={(event) =>
+                setAddress((current) => ({
+                  ...current,
+                  area: event.target.value,
+                }))
+              }
+            />
+            <TextField
+              label="City"
+              name="city"
+              autoComplete="address-level2"
+              value={address.city}
+              onChange={(event) =>
+                setAddress((current) => ({
+                  ...current,
+                  city: event.target.value,
+                }))
+              }
+            />
+          </div>
+          <TextAreaField
+            label="Delivery notes"
+            name="deliveryNotes"
+            value={address.deliveryNotes}
+            onChange={(event) =>
+              setAddress((current) => ({
+                ...current,
+                deliveryNotes: event.target.value,
+              }))
+            }
+          />
         </div>
         <Button
           type="button"
@@ -52,21 +133,12 @@ export function CheckoutForm({
             }
 
             setPending(true);
-            let orderLocation = location;
+            const destinationLocation = buildDestinationLocation(address);
 
-            if (!orderLocation.label) {
-              try {
-                orderLocation = await requestCurrentLocationValue();
-                setLocation(orderLocation);
-              } catch (error) {
-                toast.error(
-                  error instanceof Error
-                    ? error.message
-                    : "Choose a destination location before submitting.",
-                );
-                setPending(false);
-                return;
-              }
+            if (!destinationLocation) {
+              toast.error("Enter the delivery address before submitting.");
+              setPending(false);
+              return;
             }
 
             const response = await fetch("/api/orders", {
@@ -74,10 +146,10 @@ export function CheckoutForm({
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 cartSessionId: sessionId,
-                destinationLocation: orderLocation.label,
-                destinationLatitude: orderLocation.latitude,
-                destinationLongitude: orderLocation.longitude,
-                destinationPlaceId: orderLocation.placeId,
+                destinationLocation,
+                destinationLatitude: null,
+                destinationLongitude: null,
+                destinationPlaceId: null,
               }),
             });
 

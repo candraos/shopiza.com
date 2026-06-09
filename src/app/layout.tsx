@@ -57,11 +57,11 @@ export default async function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className="h-full antialiased"
+      className="h-full overflow-x-hidden antialiased"
     >
-      <body className="min-h-full bg-[var(--surface-subtle)] text-[var(--ink-900)]">
+      <body className="min-h-full overflow-x-hidden bg-[var(--surface-subtle)] text-[var(--ink-900)]">
         <AppProviders>
-          <div className="relative flex min-h-screen flex-col">
+          <div className="relative flex min-h-screen flex-col overflow-x-hidden">
             <SiteHeader user={user} />
             <main className="flex-1">{children}</main>
             {isAdmin ? null : (

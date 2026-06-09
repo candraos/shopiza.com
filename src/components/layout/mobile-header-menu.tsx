@@ -85,7 +85,7 @@ export function MobileHeaderMenu({
         role="dialog"
         aria-modal="true"
         className={cn(
-          "fixed inset-0 z-50 flex h-dvh max-h-dvh w-screen flex-col overflow-y-auto bg-white px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] transition-transform duration-300 ease-out sm:px-5",
+          "fixed inset-0 z-50 flex h-dvh max-h-dvh flex-col overflow-x-hidden overflow-y-auto bg-white px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] transition-transform duration-300 ease-out sm:px-5",
           isOpen ? "translate-x-0" : "pointer-events-none translate-x-full",
         )}
       >
@@ -135,7 +135,7 @@ export function MobileHeaderMenu({
 
             <div className="mt-6 shrink-0 border-t border-[var(--line-soft)] pt-5">
               {user ? (
-                <LogoutButton />
+                <LogoutButton onLogout={() => setIsOpen(false)} />
               ) : (
                 <div className="grid gap-3">
                   <ButtonLink

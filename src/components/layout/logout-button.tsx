@@ -4,13 +4,15 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 
-export function LogoutButton() {
+export function LogoutButton({ onLogout }: { onLogout?: () => void }) {
   const router = useRouter();
 
   return (
     <button
       type="button"
       onClick={async () => {
+        onLogout?.();
+
         const response = await fetch("/api/auth/logout", { method: "POST" });
         if (!response.ok) {
           toast.error("Could not log you out.");
