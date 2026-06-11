@@ -4,7 +4,7 @@ export const SUPPORT_EMAIL =
 export const SUPPORT_PHONE_NUMBER =
   process.env.SHOPIZAJ_SUPPORT_PHONE ?? "+96176329902";
 export const SUPPORT_ADDRESS =
-  process.env.SHOPIZAJ_SUPPORT_ADDRESS ?? "Achrafieh Alferd Naccache Road";
+  process.env.SHOPIZAJ_SUPPORT_ADDRESS ?? "Achrafieh Alfred Naccache Road";
 export const INSTAGRAM_URL =
   process.env.SHOPIZAJ_INSTAGRAM_URL ?? "https://www.instagram.com/shopizaj/";
 export const FACEBOOK_URL =

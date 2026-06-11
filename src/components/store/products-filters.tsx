@@ -93,7 +93,7 @@ export function ProductsFilters({
   return (
     <form
       ref={formRef}
-      className="mt-8 grid gap-4 md:grid-cols-[1fr_240px]"
+      className="mt-8 grid gap-4 md:grid-cols-[1fr_160px]"
       onSubmit={(event) => {
         event.preventDefault();
         updateFilters();
@@ -113,7 +113,7 @@ export function ProductsFilters({
         name="section"
         defaultValue={initialSection ?? ""}
         onChange={scheduleFilterUpdate}
-        className="rounded-2xl border border-[var(--line-soft)] bg-white px-4 py-3 text-sm shadow-[0_10px_18px_rgba(17,24,39,0.04)] outline-none focus:border-[rgba(244,71,161,0.45)]"
+        className="rounded-2xl border border-[var(--line-soft)] bg-white px-3 py-2 text-sm shadow-[0_10px_18px_rgba(17,24,39,0.04)] outline-none focus:border-[rgba(244,71,161,0.45)]"
       >
         <option value="">All sections</option>
         {sections.map((sectionItem) => (

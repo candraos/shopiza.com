@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-import { DeleteAccountButton } from "@/components/account/delete-account-button";
 import { ButtonLink } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth/current-user";
 
@@ -49,18 +48,6 @@ export default async function AccountPage() {
         </div>
       </div>
 
-      <div className="glass-card rounded-[32px] p-6 sm:p-8">
-        <h2 className="display-title text-2xl font-semibold text-[var(--navy-950)]">
-          Delete account
-        </h2>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--ink-700)]">
-          This removes your account access from the site. Existing order records stay in the
-          admin history with their saved customer snapshot details.
-        </p>
-        <div className="mt-6">
-          <DeleteAccountButton />
-        </div>
-      </div>
     </div>
   );
 }

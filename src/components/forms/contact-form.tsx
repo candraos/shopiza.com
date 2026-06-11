@@ -15,10 +15,11 @@ export function ContactForm() {
       className="grid gap-4"
       onSubmit={async (event) => {
         event.preventDefault();
+        const form = event.currentTarget;
         setPending(true);
         setErrors({});
 
-        const formData = new FormData(event.currentTarget);
+        const formData = new FormData(form);
         const payload = Object.fromEntries(formData.entries());
 
         const response = await fetch("/api/contact", {
@@ -39,7 +40,7 @@ export function ContactForm() {
           return;
         }
 
-        event.currentTarget.reset();
+        form.reset();
         toast.success("Your message has been sent.");
         setPending(false);
       }}
