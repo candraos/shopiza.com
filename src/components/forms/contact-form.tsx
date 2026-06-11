@@ -59,12 +59,6 @@ export function ContactForm() {
         </div>
       </div>
       <div>
-        <TextField label="Phone number" name="phoneNumber" placeholder="+961..." />
-        {errors.phoneNumber ? (
-          <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.phoneNumber[0]}</p>
-        ) : null}
-      </div>
-      <div>
         <TextAreaField label="Message" name="message" placeholder="How can we help?" />
         {errors.message ? (
           <p className="mt-2 text-xs text-[var(--danger-500)]">{errors.message[0]}</p>

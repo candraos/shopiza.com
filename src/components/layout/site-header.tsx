@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { type CurrentUser } from "@/lib/auth/current-user";
 import { CartIconLink } from "@/components/store/cart-icon-link";
 import { ShopizajLogo } from "@/components/brand/shopizaj-logo";
@@ -18,6 +20,7 @@ const adminNavItems = [
 const clientNavItems = [
   { href: "/", label: "Home", exact: true },
   { href: "/products", label: "Shop" },
+  { href: "/contact", label: "Contact Us" },
 ] as const;
 
 export function SiteHeader({ user }: { user: CurrentUser }) {
@@ -80,11 +83,9 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
             <NavLink href="/products">
               Shop
             </NavLink>
-            {user ? (
-              <NavLink href="/account" exact>
-                My profile
-              </NavLink>
-            ) : null}
+            <NavLink href="/contact">
+              Contact Us
+            </NavLink>
             {user ? (
               <NavLink href="/account/orders">
                 My orders
@@ -101,7 +102,6 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
               user
                 ? [
                     ...clientNavItems,
-                    { href: "/account", label: "My profile", exact: true },
                     { href: "/account/orders", label: "My orders" },
                   ]
                 : [...clientNavItems]
@@ -110,11 +110,9 @@ export function SiteHeader({ user }: { user: CurrentUser }) {
           />
           {user ? (
             <div className="hidden items-center gap-3 md:flex">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-[var(--navy-950)]">
-                  {user.fullName}
-                </p>
-              </div>
+              <Link href="/account" className="text-sm font-semibold text-[var(--navy-950)] hover:text-[var(--pink-500)] transition-colors">
+                {user.username}
+              </Link>
               <LogoutButton />
             </div>
           ) : (

@@ -4,17 +4,16 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
 
 export function DeleteAccountButton() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
   return (
-    <Button
+    <button
       type="button"
-      variant="danger"
       disabled={pending}
+      className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-400 transition hover:bg-red-100 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
       onClick={async () => {
         const confirmed = window.confirm(
           "Delete your account permanently? Your profile access will be removed immediately.",
@@ -48,6 +47,6 @@ export function DeleteAccountButton() {
       }}
     >
       {pending ? "Deleting account..." : "Delete account"}
-    </Button>
+    </button>
   );
 }

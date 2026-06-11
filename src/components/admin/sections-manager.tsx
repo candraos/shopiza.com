@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { Button, ButtonLink } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 
 type SectionItem = {
   id: string;
@@ -49,9 +49,9 @@ export function SectionsManager({ sections }: { sections: SectionItem[] }) {
               <ButtonLink href={`/admin/sections/${section.id}`} variant="secondary">
                 Edit
               </ButtonLink>
-              <Button
+              <button
                 type="button"
-                variant="danger"
+                className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-400 transition hover:bg-red-100 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={async () => {
                   if (
                     !window.confirm(
@@ -74,7 +74,7 @@ export function SectionsManager({ sections }: { sections: SectionItem[] }) {
                 }}
               >
                 Delete
-              </Button>
+              </button>
             </div>
           </div>
         </article>
