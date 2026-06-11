@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useCart } from "@/components/store/cart-provider";
@@ -37,7 +37,7 @@ export function CheckoutForm({
   userName: string;
 }) {
   const router = useRouter();
-  const { cart, sessionId, clearCart } = useCart();
+  const { cart, sessionId, clearCart, isReady } = useCart();
   const [address, setAddress] = useState({
     buildingNumber: "",
     streetAddress: "",
@@ -46,6 +46,14 @@ export function CheckoutForm({
     deliveryNotes: "",
   });
   const [pending, setPending] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // K7: redirect to cart if cart is empty
+  useEffect(() => {
+    if (isReady && cart.items.length === 0) {
+      router.replace("/cart");
+    }
+  }, [isReady, cart.items.length, router]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -61,54 +69,78 @@ export function CheckoutForm({
           it to appear on the order and in the confirmation email.
         </p>
         <div className="mt-8 grid gap-4">
-          <TextField
-            label="Building number"
-            name="buildingNumber"
-            value={address.buildingNumber}
-            onChange={(event) =>
-              setAddress((current) => ({
-                ...current,
-                buildingNumber: event.target.value,
-              }))
-            }
-          />
-          <TextField
-            label="Street address"
-            name="streetAddress"
-            autoComplete="street-address"
-            value={address.streetAddress}
-            onChange={(event) =>
-              setAddress((current) => ({
-                ...current,
-                streetAddress: event.target.value,
-              }))
-            }
-          />
+          <div>
+            <TextField
+              label="Building number"
+              name="buildingNumber"
+              value={address.buildingNumber}
+              onChange={(event) => {
+                setFieldErrors((e) => ({ ...e, buildingNumber: "" }));
+                setAddress((current) => ({
+                  ...current,
+                  buildingNumber: event.target.value,
+                }));
+              }}
+            />
+            {fieldErrors.buildingNumber ? (
+              <p className="mt-1.5 text-xs text-(--danger-500)">{fieldErrors.buildingNumber}</p>
+            ) : null}
+          </div>
+          <div>
+            <TextField
+              label="Street address"
+              name="streetAddress"
+              autoComplete="street-address"
+              value={address.streetAddress}
+              onChange={(event) => {
+                setFieldErrors((e) => ({ ...e, streetAddress: "" }));
+                setAddress((current) => ({
+                  ...current,
+                  streetAddress: event.target.value,
+                }));
+              }}
+            />
+            {fieldErrors.streetAddress ? (
+              <p className="mt-1.5 text-xs text-(--danger-500)">{fieldErrors.streetAddress}</p>
+            ) : null}
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField
-              label="Area"
-              name="area"
-              autoComplete="address-level3"
-              value={address.area}
-              onChange={(event) =>
-                setAddress((current) => ({
-                  ...current,
-                  area: event.target.value,
-                }))
-              }
-            />
-            <TextField
-              label="City"
-              name="city"
-              autoComplete="address-level2"
-              value={address.city}
-              onChange={(event) =>
-                setAddress((current) => ({
-                  ...current,
-                  city: event.target.value,
-                }))
-              }
-            />
+            <div>
+              <TextField
+                label="Area"
+                name="area"
+                autoComplete="address-level3"
+                value={address.area}
+                onChange={(event) => {
+                  setFieldErrors((e) => ({ ...e, area: "" }));
+                  setAddress((current) => ({
+                    ...current,
+                    area: event.target.value,
+                  }));
+                }}
+              />
+              {fieldErrors.area ? (
+                <p className="mt-1.5 text-xs text-(--danger-500)">{fieldErrors.area}</p>
+              ) : null}
+            </div>
+            <div>
+              <TextField
+                label="City"
+                name="city"
+                autoComplete="address-level2"
+                value={address.city}
+                onChange={(event) => {
+                  setFieldErrors((e) => ({ ...e, city: "" }));
+                  setAddress((current) => ({
+                    ...current,
+                    city: event.target.value,
+                  }));
+                }}
+              />
+              {fieldErrors.city ? (
+                <p className="mt-1.5 text-xs text-(--danger-500)">{fieldErrors.city}</p>
+              ) : null}
+            </div>
           </div>
           <TextAreaField
             label="Delivery notes"
@@ -132,14 +164,27 @@ export function CheckoutForm({
               return;
             }
 
-            setPending(true);
-            const destinationLocation = buildDestinationLocation(address);
+            const errors: Record<string, string> = {};
+            if (!address.buildingNumber.trim()) {
+              errors.buildingNumber = "Building number is required.";
+            }
+            if (!address.streetAddress.trim()) {
+              errors.streetAddress = "Street address is required.";
+            }
+            if (!address.area.trim()) {
+              errors.area = "Area is required.";
+            }
+            if (!address.city.trim()) {
+              errors.city = "City is required.";
+            }
 
-            if (!destinationLocation) {
-              toast.error("Enter the delivery address before submitting.");
-              setPending(false);
+            if (Object.keys(errors).length > 0) {
+              setFieldErrors(errors);
               return;
             }
+
+            setPending(true);
+            const destinationLocation = buildDestinationLocation(address);
 
             const response = await fetch("/api/orders", {
               method: "POST",

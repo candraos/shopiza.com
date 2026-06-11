@@ -84,15 +84,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const loadCart = async () => {
-      const currentSessionId = ensureSessionId();
-      setSessionId(currentSessionId);
+      try {
+        const currentSessionId = ensureSessionId();
+        setSessionId(currentSessionId);
 
-      const response = await fetch(`/api/cart?sessionId=${currentSessionId}`, {
-        cache: "no-store",
-      });
-      const payload = await readJson<{ cart: CartState }>(response);
-      setCart(payload.cart);
-      setIsReady(true);
+        const response = await fetch(`/api/cart?sessionId=${currentSessionId}`, {
+          cache: "no-store",
+        });
+
+        // Admins are not allowed a cart — treat silently as empty
+        if (response.status === 403) {
+          setIsReady(true);
+          return;
+        }
+
+        const payload = await readJson<{ cart: CartState }>(response);
+        setCart(payload.cart);
+      } catch {
+        // Network or parse error — leave cart empty, still mark ready
+      } finally {
+        setIsReady(true);
+      }
     };
 
     void loadCart();
